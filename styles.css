@@ -1,0 +1,62 @@
+/* Fixed top navigation bar */
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #FFE4E1, #E6E6FA);
+    z-index: 9999;
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    min-height: 60px;
+}
+
+/* Style for navigation cards */
+.nav-card {
+    background: rgba(255,255,255,0.9);
+    padding: 8px 15px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out, background 0.3s;
+    cursor: pointer;
+    font-family: 'Lato', sans-serif;
+    font-size: 0.9rem;
+    color: #2C3E50;
+    text-align: center;
+    min-width: 120px;
+    flex: 1;
+    max-width: 150px;
+}
+.nav-card:hover {
+    transform: translateY(-2px);
+    background: #E8F5E8;
+}
+
+/* Ensure main content is not overlapped */
+.main-content {
+    margin-top: 80px;
+    padding: 20px;
+}
+
+/* Hide Streamlit's default sidebar and header */
+[data-testid="stSidebar"], [data-testid="stHeader"] {
+    display: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .nav-card {
+        min-width: 80px;
+        font-size: 0.8rem;
+        padding: 6px 10px;
+    }
+    .top-nav {
+        padding: 5px 10px;
+        gap: 5px;
+    }
+}
