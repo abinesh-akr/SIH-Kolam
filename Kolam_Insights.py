@@ -9,9 +9,11 @@ import torch.nn as nn
 from torchvision import transforms
 from PIL import Image
 import pandas as pd
-from kolam_classifier_logic import load_model, predict
+from kolam_classifier_logic import predict  # Removed load_model import
 from kolam_descriptions import get_description
 import os
+import requests
+from pathlib import Path
 
 load_dotenv()
 
@@ -39,6 +41,64 @@ sutra_agent = Agent(
 )
 
 st.set_page_config(page_title="Kolam Insights", layout="wide")
+
+# Function to download the model from GitHub Release
+def download_model(url, local_path="simple_kolam_classifier.pth"):
+    if not Path(local_path).exists():
+        try:
+            with st.spinner("Downloading model from GitHub Release..."):
+                response = requests.get(url, stream=True)
+                response.raise_for_status()  # Check for HTTP errors
+                with open(local_path, 'wb') as f:
+                    for chunk in response.iter_content(chunk_size=8192):
+                        f.write(chunk)
+            st.sidebar.success(f"Model downloaded to {local_path}")
+        except Exception as e:
+            st.error(f"Failed to download model: {e}")
+            st.stop()
+    return local_path
+
+# Custom load_model function (replace with your actual model architecture)
+def load_model():
+    model_url = "https://github.com/abinesh-akr/SIH-Kolam/releases/download/kolam/simple_kolam_classifier.pth"  # Replace with your actual URL
+    local_model_path = download_model(model_url)
+    
+    try:
+        # Assuming a standard PyTorch model (modify based on your kolam_classifier_logic.py)
+        checkpoint = torch.load(local_model_path, map_location='cpu')  # Use 'cuda' if GPU available
+        
+        # Replace with your actual model architecture
+        class KolamClassifier(nn.Module):
+            def __init__(self, num_classes=10):  # Adjust num_classes based on your model
+                super(KolamClassifier, self).__init__()
+                # Example: Simple CNN architecture (modify to match your training)
+                self.features = nn.Sequential(
+                    nn.Conv2d(3, 64, kernel_size=3, padding=1),
+                    nn.ReLU(inplace=True),
+                    nn.MaxPool2d(kernel_size=2, stride=2),
+                    nn.Conv2d(64, 128, kernel_size=3, padding=1),
+                    nn.ReLU(inplace=True),
+                    nn.MaxPool2d(kernel_size=2, stride=2),
+                )
+                self.classifier = nn.Sequential(
+                    nn.Linear(128 * 56 * 56, 512),  # Adjust based on input size
+                    nn.ReLU(inplace=True),
+                    nn.Linear(512, num_classes),
+                )
+            
+            def forward(self, x):
+                x = self.features(x)
+                x = x.view(x.size(0), -1)
+                x = self.classifier(x)
+                return x
+        
+        model = KolamClassifier()  # Instantiate your model
+        model.load_state_dict(checkpoint['model_state_dict'] if 'model_state_dict' in checkpoint else checkpoint)
+        model.eval()
+        return model
+    except Exception as e:
+        st.error(f"An error occurred while loading the model: {e}")
+        st.stop()
 
 st.title("🔍 Kolam Insights")
 st.write("Analyze Kolam designs to identify principles and classify types.")
@@ -109,9 +169,6 @@ with tab2:
     try:
         model = load_model()
         st.sidebar.success("✅ Model loaded successfully!")
-    except FileNotFoundError:
-        st.error("Model file not found. Please ensure 'simple_kolam_classifier.pth' is in the root directory.")
-        st.stop()
     except Exception as e:
         st.error(f"An error occurred while loading the model: {e}")
         st.stop()
