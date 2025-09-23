@@ -19,3 +19,4 @@ opencv-python
 scikit-image
 torch
 torchvision
+opencv-python
