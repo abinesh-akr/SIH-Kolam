@@ -15,7 +15,6 @@ google-genai==1.36.0
 pandas==2.3.2
 langdetect-py==1.1.1
 streamlit-drawable-canvas-fix==0.9.7
-opencv-python
 scikit-image
 torch
 torchvision
