@@ -19,4 +19,4 @@ opencv-python
 scikit-image
 torch
 torchvision
-opencv-python
+opencv-python-headless==4.10.0.84
