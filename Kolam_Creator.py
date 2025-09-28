@@ -214,23 +214,50 @@ footer {visibility: hidden;}
 """, unsafe_allow_html=True)
 
 
+st.title("🎨 Kolam Creator")
+st.write("Recreate Kolams through generation or drawing.")
 
-# Tabs
-tab1, tab2 = st.tabs(["AI Kolam Generator", "Interactive Drawing Canvas"])
+tab1, tab2 = st.tabs(["AI Prompt Generation", "Canvas & Brush"])
 
 with tab1:
-    # Sidebar for AI Kolam Generator
-    st.sidebar.header("🎨 AI Kolam Generator Settings")
-    kolam_type = st.sidebar.selectbox("Kolam Type", ["Traditional", "Sikku", "Rangoli", "Geometric"])
-    state = st.sidebar.selectbox("State", ["Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Odisha"])
-    complexity = st.sidebar.slider("Complexity", 0.1, 1.0, 0.5)
-    grid_size = st.sidebar.slider("Grid Size", 3, 10, 5)
-    color_scheme = st.sidebar.selectbox("Color Scheme", ["White", "Multicolor", "Custom"])
-    occasion = st.sidebar.selectbox("Occasion", ["Daily", "Festival", "Wedding", "Ceremony"])
-    custom_elements = st.sidebar.text_area("Custom Elements (e.g., peacock, floral)", height=100)
+    # Code from Kolam.py (assuming it's the prompt-based)
+    client = genai.Client(api_key=GEMINI_API_KEY)
 
     def create_advanced_kolam_prompt(kolam_type, state, complexity, grid_size, color_scheme, occasion, custom_elements):
-        return f"Generate a {kolam_type} Kolam design from {state} with complexity level {complexity}, grid size {grid_size}x{grid_size}, using {color_scheme} colors, suitable for {occasion}. Include {custom_elements} if specified."
+        prompt = """
+        Generate a high-quality, artistic Kolam (Rangoli) design based on the following details:
+
+        - Type: Symmetric Kolam design with dots (pulli) as a base grid.
+        - Grid: Use a 1-3-5-7-9-7-5-3-1 stepped dot grid.
+        - Style: Traditional South Indian Kolam, drawn with white rice powder on a dark, wet floor background.
+        - Lines: Smooth, curvilinear, continuous loops enclosing all dots.
+        - Symmetry: Both reflectional and rotational symmetry must be present.
+        - Visual feel: Elegant, culturally authentic, geometric, and mathematically balanced.
+        - Avoid text, borders, or watermarks.
+        - Make it look hand-drawn but neat, with fine white strokes.
+        - Output: A single, clear Kolam pattern with focus on the design — no extra decorations, no people, no objects.
+        """
+        return prompt
+
+    col1, col2 = st.columns(2)
+    with col1:
+        kolam_type = st.selectbox("Kolam Style", ["Sikku Kolam", "Pulli Kolam", "Rangoli", "Freehand Kolam",
+                                                  "Geometric Kolam", "Floral Kolam", "Festival Special"], index=2)
+        state = st.selectbox("Regional Style", ["Tamil Nadu", "Karnataka", "Andhra Pradesh", "Kerala", "Telangana"])
+
+    with col2:
+        complexity = st.selectbox("Complexity", ["Beginner", "Intermediate", "Advanced", "Master Level"], index=1)
+        grid_size = st.slider("Pattern Density", 8, 20, 12)
+
+    color_scheme = st.sidebar.selectbox("Color Theme", ["Vibrant Festival", "Royal Colors", "Pastel Dream",
+                                                       "Nature Inspired", "Traditional White", "Monochrome Elegant"])
+
+    occasion = st.sidebar.selectbox("Special Occasion", ["Daily Practice", "Diwali", "Pongal",
+                                                        "Wedding", "Navratri", "Housewarming"])
+
+    custom_elements = st.sidebar.text_area("Custom Elements",
+                                           placeholder="e.g., peacock motifs, lotus flowers, temple arches...",
+                                           height=80)
 
     if st.sidebar.button("🎨 Create Stunning Kolam", type="primary", use_container_width=True):
         with st.spinner("🎭 AI is creating your masterpiece..."):
@@ -238,22 +265,22 @@ with tab1:
                 advanced_prompt = create_advanced_kolam_prompt(
                     kolam_type, state, complexity, grid_size, color_scheme, occasion, custom_elements
                 )
-                # Mock response for demonstration (replace with actual API call)
-                response = type('MockResponse', (), {
-                    'candidates': [type('MockCandidate', (), {
-                        'content': type('MockContent', (), {
-                            'parts': [type('MockPart', (), {'inline_data': type('MockData', (), {'data': BytesIO()})()})]
-                        })()
-                    })()]
-                })()
+
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash-image-preview",
+                    contents=advanced_prompt
+                )
+
                 image_parts = [
                     part.inline_data.data
                     for part in response.candidates[0].content.parts
                     if part.inline_data
                 ]
+
                 if image_parts:
-                    image = Image.open(image_parts[0])
+                    image = Image.open(BytesIO(image_parts[0]))
                     st.image(image, use_container_width=True, caption=f"✨ {kolam_type} Kolam from {state}")
+
                     img_buffer = BytesIO()
                     image.save(img_buffer, format="PNG")
                     st.download_button(
@@ -265,28 +292,30 @@ with tab1:
                     )
                 else:
                     st.error("⚠️ No image was generated. Try again with a different configuration.")
+
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
                 st.info("💡 Check your API connection or simplify your prompt.")
 
 with tab2:
+
+
     # Hero Section
     st.markdown("""
     <div class="hero-section">
-        <div class="floating-dot dot-1"></div>
-        <div class="floating-dot dot-2"></div>
-        <div class="floating-dot dot-3"></div>
+        <div class="kolam-pattern-large"></div>
         <h1 class="hero-title">🎨 Kolam Drawing Canvas</h1>
         <p class="hero-subtitle">Multi-Brush • Symmetry • Sacred Geometry</p>
+        <div class="kolam-pattern-small"></div>
     </div>
     """, unsafe_allow_html=True)
 
     # Instructions / Tips
     st.markdown("""
     <div class="tips-container">
-        <div class="section-title">✨ Tips for Drawing Beautiful Kolam</div>
+        <div class="tips-title">✨ Tips for Drawing Beautiful Kolam</div>
         <ul style="font-family: 'Lato', sans-serif; color: #2C3E50; line-height: 1.6;">
-            <li>🎨 Use vibrant colors for intricate patterns</li>
+            <li>🎨 Use light colors for intricate patterns</li>
             <li>🖌️ Try different brush sizes and shapes</li>
             <li>🔄 Enable mirror symmetry for authentic Kolam designs</li>
             <li>💾 Download your final masterpiece when done</li>
@@ -295,7 +324,7 @@ with tab2:
     </div>
     """, unsafe_allow_html=True)
 
-     # Canvas & Brush Settings
+    # Canvas & Brush Settings
     st.markdown('<div class="settings-container">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-title">🎨 Canvas & Brush Settings</h2>', unsafe_allow_html=True)
 
