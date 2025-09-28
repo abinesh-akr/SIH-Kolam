@@ -178,7 +178,7 @@ with tab2:
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         image = image.convert('L')  # Grayscale conversion
-        st.image(image, caption="Uploaded Kolam (Grayscale)", use_column_width=True)
+        st.image(image, caption="Uploaded Kolam (Grayscale)")
         
         if st.button("Classify Kolam", type="primary"):
             with st.spinner("Classifying..."):
