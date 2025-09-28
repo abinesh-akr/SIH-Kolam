@@ -9,6 +9,8 @@ from kolam_one_stroke_logic import (
     generate_diamond_dots,
     normalize_path
 )
+from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration
+import av
 
 st.set_page_config(page_title="Kolam Mastery", layout="wide")
 
@@ -189,8 +191,8 @@ with tab3:
         
         st.image(original_image, caption="Uploaded Kolam for Grid Analysis", channels="BGR")
         
-        grid_dimension = st.slider("Grid Dimension (e.g., 9 for 9x9 grid)", min_value=5, max_value=15, value=9, key="grid_dim")
-        
+        grid_dimension = st.slider("Grid Dimension (e.g., 9 for 9x9 grid)", min_value=5, max_value=20, value=9, key="grid_dim")
+       
         if st.button("Analyze and Animate Grid Drawing", type="primary"):
             with st.spinner("Analyzing image and preparing animation..."):
                 try:
@@ -257,91 +259,136 @@ with tab3:
         
         st.subheader("Animated Grid Drawing")
         
-        canvas_placeholder = st.empty()
-        
-        img_h, img_w, _ = st.session_state.tab3_image_shape
-        
-        DISPLAY_WIDTH = 500
-        aspect_ratio = img_h / img_w
-        display_height = int(DISPLAY_WIDTH * aspect_ratio)
-        
-        cap = None
-        dot_color = (0, 0, 255)  # Always red for dots
-        
-        if enable_webcam:
-            cap = cv2.VideoCapture(0)
-            if not cap.isOpened():
-                st.error("Cannot open webcam. Falling back to black background.")
-                enable_webcam = False
-        
-        # Prepare drawing state
-        current_dots = []
-        drawn_segments = []
-        
-        def get_contrast_color(frame):
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            avg_brightness = np.mean(gray)
-            if avg_brightness > 170:
-                return (0, 0, 0)  # Black for bright backgrounds
-            elif avg_brightness < 85:
-                return (255, 255, 255)  # White for dark backgrounds
-            else:
-                return (255, 255, 0)  # Yellow for medium contrast
-            
-        def display_current_state():
-            if enable_webcam:
-                ret, frame = cap.read()
-                if ret:
-                    bg = cv2.resize(frame, (img_w, img_h))
-                    line_color = get_contrast_color(bg)
+        # Custom Video Processor for WebRTC
+        class KolamVideoProcessor(VideoTransformerBase):
+            def __init__(self, dot_size, line_thickness):
+                self.current_dots = []
+                self.drawn_segments = []
+                self.img_h, self.img_w = st.session_state.tab3_image_shape[:2]
+                self.dot_size = dot_size  # Use passed parameter
+                self.line_thickness = line_thickness  # Use passed parameter
+                self.dot_color = (0, 0, 255)  # Red dots
+                self.animation_step = 0
+                self.grid_dots = st.session_state.tab3_grid_dots
+                self.line_paths = st.session_state.tab3_line_paths
+                self.total_dots = len(self.grid_dots)
+                self.total_segments = sum(len(path) - 1 for path in self.line_paths if len(path) > 1)
+
+            def get_contrast_color(self, frame):
+                gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                avg_brightness = np.mean(gray)
+                if avg_brightness > 170:
+                    return (0, 0, 0)  # Black for bright backgrounds
+                elif avg_brightness < 85:
+                    return (255, 255, 255)  # White for dark backgrounds
                 else:
-                    bg = np.zeros((img_h, img_w, 3), dtype=np.uint8)
-                    line_color = (255, 255, 255)
+                    return (0, 255, 255)  # Yellow for medium
+
+            def transform(self, frame: av.VideoFrame) -> av.VideoFrame:
+                img = frame.to_ndarray(format="bgr24")
+                
+                # Resize input frame to match image shape
+                img_resized = cv2.resize(img, (self.img_w, self.img_h))
+                
+                line_color = self.get_contrast_color(img_resized)
+                
+                # Step 1: Animate placing dots
+                if self.animation_step < self.total_dots * 5:
+                    dot_index = self.animation_step // 5
+                    if dot_index < len(self.grid_dots):
+                        self.current_dots.append(self.grid_dots[dot_index])
+                    self.animation_step += 1
+                
+                # Step 2: Animate lines
+                elif self.animation_step < self.total_dots * 5 + self.total_segments * 5:
+                    seg_step = (self.animation_step - self.total_dots * 5) // 5
+                    if seg_step < self.total_segments:
+                        all_segments = [(tuple(path[i][0]), tuple(path[i+1][0])) 
+                                        for path in self.line_paths if len(path) > 1 
+                                        for i in range(len(path) - 1)]
+                        if seg_step < len(all_segments):
+                            self.drawn_segments.append(all_segments[seg_step])
+                    self.animation_step += 1
+                else:
+                    self.animation_step = 0
+                    self.current_dots = []
+                    self.drawn_segments = []
+                
+                # Draw current state
+                for dot in self.current_dots:
+                    cv2.circle(img_resized, dot, self.dot_size, self.dot_color, -1)
+                for pt1, pt2 in self.drawn_segments:
+                    cv2.line(img_resized, pt1, pt2, line_color, self.line_thickness)
+                
+                return av.VideoFrame.from_ndarray(img_resized, format="bgr24")
+
+        if enable_webcam:
+            st.info("Grant camera permission when prompted. Animation will overlay on live feed.")
+            webrtc_ctx = webrtc_streamer(
+                key="kolam-webcam",
+                video_processor_factory=lambda: KolamVideoProcessor(dot_size, line_thickness),  # Pass parameters
+                rtc_configuration=RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+            )
+            
+            if webrtc_ctx.state.playing:
+                st.success("Webcam stream active! Watch the animation overlay.")
             else:
-                bg = np.zeros((img_h, img_w, 3), dtype=np.uint8)
-                line_color = (255, 255, 255)
+                st.warning("Start the stream by clicking the play button above.")
+        else:
+            st.info("Webcam disabled. Animation will use black background.")
+            canvas_placeholder = st.empty()
+            img_h, img_w = st.session_state.tab3_image_shape[:2]
+            canvas = np.zeros((img_h, img_w, 3), dtype=np.uint8)
+            current_dots = []
+            drawn_segments = []
             
-            # Redraw all elements with current line color
-            for dot in current_dots:
-                cv2.circle(bg, dot, dot_size, dot_color, -1)
-            for pt1, pt2 in drawn_segments:
-                cv2.line(bg, pt1, pt2, line_color, line_thickness)
+            st.info("Step 1: Placing the foundational grid dots...")
+            for i, dot in enumerate(st.session_state.tab3_grid_dots):
+                current_dots.append(dot)
+                for d in current_dots:
+                    cv2.circle(canvas, d, dot_size, (0, 0, 255), -1)
+                canvas_placeholder.image(cv2.resize(canvas, (500, int(500 * img_h / img_w))), channels="BGR")
+                if i % max(1, len(st.session_state.tab3_grid_dots) // 20) == 0:
+                    time.sleep(0.01)
             
-            canvas_placeholder.image(cv2.resize(bg, (DISPLAY_WIDTH, display_height)), channels="BGR")
-            return line_color
+            st.info("Step 2: Drawing the connecting lines...")
+            for contour in st.session_state.tab3_line_paths:
+                if len(contour) < 2:
+                    continue
+                for i in range(len(contour) - 1):
+                    pt1 = tuple(contour[i][0])
+                    pt2 = tuple(contour[i+1][0])
+                    drawn_segments.append((pt1, pt2))
+                    line_color = (255, 255, 255)  # Default white for black bg
+                    for d in current_dots:
+                        cv2.circle(canvas, d, dot_size, (0, 0, 255), -1)
+                    for p1, p2 in drawn_segments:
+                        cv2.line(canvas, p1, p2, line_color, line_thickness)
+                    canvas_placeholder.image(cv2.resize(canvas, (500, int(500 * img_h / img_w))), channels="BGR")
+                    time.sleep(0.01)
+            
+            st.success("Grid animation complete!")
+            
+            # Download for non-webcam
+            _, im_buf_arr = cv2.imencode(".png", canvas)
+            byte_im = im_buf_arr.tobytes()
+            st.download_button(
+                label="Download Grid Drawing (PNG)",
+                data=byte_im,
+                file_name="grid_kolam_drawing.png",
+                mime="image/png",
+            )
         
-        # Step 1: Place the grid dots
-        st.info("Step 1: Placing the foundational grid dots...")
-        for i, dot in enumerate(st.session_state.tab3_grid_dots):
-            current_dots.append(dot)
-            display_current_state()
-            if i % max(1, len(st.session_state.tab3_grid_dots) // 20) == 0:
-                time.sleep(0.01)
-        
-        time.sleep(1)
-        
-        # Step 2: Draw the lines
-        st.info("Step 2: Drawing the connecting lines...")
+        # Download (for both webcam and non-webcam cases, static version)
+        final_canvas = np.zeros((st.session_state.tab3_image_shape[0], st.session_state.tab3_image_shape[1], 3), dtype=np.uint8)
+        for dot in st.session_state.tab3_grid_dots:
+            cv2.circle(final_canvas, dot, dot_size, (0, 0, 255), -1)
         for contour in st.session_state.tab3_line_paths:
-            if len(contour) < 2:
-                continue
-            for i in range(len(contour) - 1):
-                pt1 = tuple(contour[i][0])
-                pt2 = tuple(contour[i+1][0])
-                drawn_segments.append((pt1, pt2))
-                line_color = display_current_state()
-                time.sleep(0.01)
-        
-        # Final display
-        final_line_color = display_current_state()
-        st.success("Grid animation complete!")
-        
-        # For download, use a black background since live webcam can't be saved
-        final_canvas = np.zeros((img_h, img_w, 3), dtype=np.uint8)
-        for dot in current_dots:
-            cv2.circle(final_canvas, dot, dot_size, dot_color, -1)
-        for pt1, pt2 in drawn_segments:
-            cv2.line(final_canvas, pt1, pt2, final_line_color, line_thickness)
+            if len(contour) > 1:
+                for i in range(len(contour) - 1):
+                    pt1 = tuple(contour[i][0])
+                    pt2 = tuple(contour[i+1][0])
+                    cv2.line(final_canvas, pt1, pt2, (255, 255, 255), line_thickness)
         
         _, im_buf_arr = cv2.imencode(".png", final_canvas)
         byte_im = im_buf_arr.tobytes()
@@ -352,9 +399,10 @@ with tab3:
             mime="image/png",
         )
         
-        if cap:
-            cap.release()
+        if 'webrtc_ctx' in locals():
+            del locals()['webrtc_ctx']
         
+        # Clean up session state
         del st.session_state.tab3_line_paths
         del st.session_state.tab3_grid_dots
         del st.session_state.tab3_image_shape
