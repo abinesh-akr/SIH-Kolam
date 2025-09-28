@@ -540,7 +540,6 @@ def apply_mirror(strokes_img: Image.Image, mirrors: int, bg_rgb: tuple) -> Image
         result = Image.alpha_composite(result, rotated)
 
     return result
-
 # -----------------------------
 # Canvas
 # -----------------------------
@@ -638,3 +637,4 @@ st.markdown("""
     </p>
 </div>
 """, unsafe_allow_html=True)
+
