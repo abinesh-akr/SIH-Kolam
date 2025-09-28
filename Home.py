@@ -1,222 +1,163 @@
 import streamlit as st
 from cards import blog_card, analysis_card, kolam_mastery_card, kolam_creator_card, one_on_one_card, community_card
 
-st.set_page_config(page_title="SymetriX", layout="wide")
+# Set page configuration
+st.set_page_config(page_title="SymmetriX", layout="wide")
 
+# Custom CSS for blue-themed layout and new animations
 st.markdown("""
 <style>
-    /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;600;700&family=Dancing+Script:wght@400;700&display=swap');
-    
-    /* Hide Streamlit default elements */
-    footer {visibility: hidden;}
-    
-    /* Main container styling */
-    .main > div {
-        padding-top: 1rem;
-    }
-    
-    /* Animated background */
-    body {
-        background: linear-gradient(-45deg, #FFE4E1, #E6E6FA, #E8F5E8, #FFEAA7);
-        background-size: 400% 400%;
-        animation: gradientShift 15s ease infinite;
-    }
-    
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    /* Animated Kolam patterns */
-    .kolam-pattern-1 {
-        width: 60px;
-        height: 60px;
-        position: relative;
-        margin: 20px auto;
-        animation: rotate 8s linear infinite;
-    }
-    
-    .kolam-pattern-1::before {
-        content: '';
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background: #FF69B4;
-        border-radius: 50%;
-        top: 0;
-        left: 50%;
-        transform: translateX(-50%);
-        box-shadow: 
-            0 15px 0 #FF69B4,
-            0 30px 0 #FF69B4,
-            0 45px 0 #FF69B4,
-            15px 7.5px 0 #FF1493,
-            15px 22.5px 0 #FF1493,
-            15px 37.5px 0 #FF1493,
-            -15px 7.5px 0 #FF1493,
-            -15px 22.5px 0 #FF1493,
-            -15px 37.5px 0 #FF1493;
-    }
-    
-    .kolam-pattern-2 {
-        width: 80px;
-        height: 80px;
-        position: relative;
-        margin: 20px auto;
-        animation: pulse 3s ease-in-out infinite;
-    }
-    
-    .kolam-pattern-2::before {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border: 3px solid #9370DB;
-        border-radius: 50%;
-        animation: ripple 2s ease-out infinite;
-    }
-    
-    .kolam-pattern-3 {
-        width: 100px;
-        height: 100px;
-        position: relative;
-        margin: 20px auto;
-        animation: spin 10s linear infinite;
-    }
-    
-    .kolam-pattern-3::before {
-        content: '';
-        position: absolute;
-        width: 6px;
-        height: 6px;
-        background: #20B2AA;
-        border-radius: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        box-shadow:
-            0 -30px 0 #FF69B4,
-            30px -30px 0 #9370DB,
-            30px 0 0 #20B2AA,
-            30px 30px 0 #FFD700,
-            0 30px 0 #FF69B4,
-            -30px 30px 0 #32CD32,
-            -30px 0 0 #FF6347,
-            -30px -30px 0 #4169E1;
-    }
-    
-    @keyframes rotate {
-        100% { transform: rotate(360deg); }
-    }
-    
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
-    }
-    
-    @keyframes ripple {
-        0% { transform: scale(0.8); opacity: 1; }
-        100% { transform: scale(2.4); opacity: 0; }
-    }
-    
-    @keyframes spin {
-        100% { transform: rotate(360deg); }
-    }
-    
-    /* Hero section */
-    .hero-section {
-        position: relative;
-        padding: 50px;
-        text-align: center;
-        background: rgba(255,255,255,0.1);
-        border-radius: 20px;
-        margin-bottom: 40px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    
-    .hero-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 5rem;
-        color: #2C3E50;
-        margin-bottom: 10px;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .hero-subtitle {
-        font-family: 'Dancing Script', cursive;
-        font-size: 2.5rem;
-        color: #5D6D7E;
-        margin-bottom: 20px;
-    }
-    
-    /* Floating decorations */
-    .floating-decoration {
-        position: absolute;
-        z-index: 0;
-    }
-    
-    .dot-1 { top: 10%; left: 10%; animation: floatUpDown 5s ease-in-out infinite; }
-    .dot-2 { top: 20%; right: 10%; animation: floatUpDown 6s ease-in-out infinite; }
-    .dot-3 { bottom: 10%; left: 15%; animation: floatUpDown 7s ease-in-out infinite; }
-    
-    @keyframes floatUpDown {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(180deg); }
-    }
-    
-    /* Responsive design */
-    @media (max-width: 768px) {
-        .hero-title { font-size: 4.5rem; }
-        .hero-subtitle { font-size: 2rem; }
-        .section-title { font-size: 2.2rem; }
-        .section-container { padding: 25px; margin: 25px 0; }
-        .parallax-text { font-size: 2rem; }
-    }
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;600;700&display=swap');
+
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Hide Streamlit default footer */
+footer {visibility: hidden;}
+
+/* Main container styling */
+.main > div {
+    padding-top: 1rem;
+}
+
+/* Hero section */
+.hero-section {
+    position: relative;
+    padding: 3rem;
+    text-align: center;
+    background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
+    border-radius: 15px;
+    margin: 5rem 2rem 2rem 2rem;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+/* Hero title and subtitle */
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 4.5rem;
+    color: #1E3A8A;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
+    to { text-shadow: 0 2px 8px rgba(59, 130, 246, 0.5); }
+}
+
+.hero-subtitle {
+    font-family: 'Lato', sans-serif;
+    font-size: 2rem;
+    color: #3B82F6;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Floating Kolam dots */
+.floating-decoration {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #3B82F6, transparent);
+    border-radius: 50%;
+    animation: floatPulse 5s ease-in-out infinite;
+}
+
+.dot-1 { top: 10%; left: 5%; animation-delay: 0s; }
+.dot-2 { top: 15%; right: 5%; animation-delay: 1.5s; }
+.dot-3 { bottom: 10%; left: 10%; animation-delay: 3s; }
+
+@keyframes floatPulse {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-15px) scale(1.2); opacity: 1; }
+}
+
+/* Card container */
+.card-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 6.5rem;
+    padding: 6rem;
+    background: #F8FAFC;
+}
+
+/* Card styling */
+.card {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #F8FAFC, #DBEAFE);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.3), transparent);
+    transition: 0.5s;
+}
+
+.card:hover::before {
+    left: 100%;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .hero-title { font-size: 3rem; }
+    .hero-subtitle { font-size: 1.5rem; }
+    .hero-section { padding: 2rem; margin: 4rem 1rem 1rem 1rem; }
+    .card-container { padding: 1rem; }
+}
 </style>
 """, unsafe_allow_html=True)
 
+# Hero section
 st.markdown("""
-<div style='text-align: center;' class="hero-section"> 
-    <div class="kolam-pattern-2"></div>  
-    <div class="kolam-pattern-3"></div>
-    <img src="https://ik.imagekit.io/o0nppkxow/Kolam_design_5_long%20(1).png?updatedAt=1757718152888" alt="SymetriX Banner" width="500" />
-    <h1 style='text-align: center;' class="hero-title">SymetriX</h1>
-    <h3 style='color: gray;' class="hero-subtitle">Infinite patterns, infinite stories.</h3>
-    <br />
-    <div style='margin-top: 10px;'>
-        <a href='https://github.com/OmmDevgoswami/SymetriX' target='_blank' style='text-decoration: none; margin: 0 10px;'>🔗 SymetriX GitHub</a>
-        <p style='color: gray;'>Built using Python - Streamlit, Pollination AI Image Generation and Sutra-multilingual model</p>
-    </div>
+<div class="hero-section">
+    <div class="floating-decoration dot-1"></div>
+    <div class="floating-decoration dot-2"></div>
+    <div class="floating-decoration dot-3"></div>
+    <img src="banner.png" alt="SymmetriX Banner" width="400" />
+    <h1 class="hero-title">SymmetriX</h1>
+    <h3 class="hero-subtitle">Infinite patterns, infinite stories.</h3>
+    <p style='color: #1E3A8A; font-family: Lato, sans-serif;'>Built using Python - Streamlit, Pollination AI Image Generation, and Sutra-multilingual model</p>
+    <a href='https://github.com/OmmDevgoswami/SymetriX' target='_blank' style='color: #3B82F6; text-decoration: none; font-family: Lato, sans-serif; font-weight: 500;'>🔗 SymetriX GitHub</a>
 </div>
 """, unsafe_allow_html=True)
 
-st.markdown("""
-<div class="floating-decoration dot-1">
-    <div class="kolam-pattern-1"></div>
-</div>
-<div class="floating-decoration dot-2">
-    <div class="kolam-pattern-2"></div>
-</div>
-<div class="floating-decoration dot-3">
-    <div class="kolam-pattern-3"></div>
-</div>
-""", unsafe_allow_html=True)
+# Card container
+st.markdown('<div class="card-container">', unsafe_allow_html=True)
 
-cols = st.columns(3)
-with cols[0].container(height=380):
-    blog_card()
-with cols[1].container(height=380):
-    analysis_card()
-with cols[2].container(height=380):
-    kolam_creator_card()
-with cols[0].container(height=380):
-    kolam_mastery_card()
-with cols[1].container(height=380):
-    one_on_one_card()
-with cols[2].container(height=380):    
-    community_card()
+# Display all cards
+blog_card()
+analysis_card()
+kolam_creator_card()
+kolam_mastery_card()
+one_on_one_card()
+community_card()
 
-st.markdown("""<div class="kolam-pattern-3"></div>""", unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
