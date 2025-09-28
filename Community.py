@@ -6,12 +6,11 @@ import os
 import time
 
 DB_PATH = "anantakolam_community.db"
-IMAGE_DIR = "uploads"
+IMAGE_DIR = "Uploads"
 
 # ----------------------
 # Helpers: DB and files
 # ----------------------
-
 def init_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     c = conn.cursor()
@@ -63,7 +62,6 @@ def init_db():
     conn.commit()
     return conn
 
-
 def save_image(file, prefix="post"):
     if not os.path.exists(IMAGE_DIR):
         os.makedirs(IMAGE_DIR)
@@ -77,7 +75,6 @@ def save_image(file, prefix="post"):
 # ----------------------
 # Data access helpers
 # ----------------------
-
 def get_user_by_name(conn, name):
     c = conn.cursor()
     c.execute("SELECT id, name, bio FROM users WHERE name = ?", (name,))
@@ -154,19 +151,149 @@ def get_upcoming_events(conn):
 # ----------------------
 # Streamlit UI
 # ----------------------
+st.set_page_config(page_title="SymmetriX Community", layout="wide")
 
-st.set_page_config(page_title="AnantaKolam Community", layout="wide")
+# Custom CSS for blue theme and new animations
+st.markdown("""
+<style>
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;600;700&display=swap');
+
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Hide Streamlit default footer */
+footer {visibility: hidden;}
+
+/* Main container */
+.main-content {
+    background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
+    padding: 2rem;
+    min-height: 100vh;
+    margin-top: 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Floating dots animation */
+.floating-dot {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, #3B82F6, transparent);
+    border-radius: 50%;
+    animation: floatPulse 5s ease-in-out infinite;
+}
+
+.dot-1 { top: 10%; left: 5%; animation-delay: 0s; }
+.dot-2 { top: 20%; right: 10%; animation-delay: 1.5s; }
+.dot-3 { bottom: 15%; left: 15%; animation-delay: 3s; }
+
+@keyframes floatPulse {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+}
+
+/* Card styling */
+.card {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #F8FAFC, #DBEAFE);
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.3), transparent);
+    transition: 0.5s;
+}
+
+.card:hover::before {
+    left: 100%;
+}
+
+/* Button styling */
+.stButton > button {
+    background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+    color: #EFF6FF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    font-family: 'Lato', sans-serif !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, #3B82F6, #93C5FD);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Form container */
+.form-container {
+    background: #F8FAFC;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Tabs styling */
+.stTabs [data-baseweb="tab"] {
+    background: #FFFFFF;
+    border-radius: 8px;
+    margin: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: #DBEAFE;
+    transform: translateY(-2px);
+}
+
+.stTabs [data-baseweb="tab-highlight"] {
+    background: #3B82F6;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .main-content { padding: 1rem; }
+    .card { padding: 1rem; }
+}
+</style>
+""", unsafe_allow_html=True)
+
 conn = init_db()
 
 if 'current_user' not in st.session_state:
     st.session_state.current_user = None
 
+
 # Centered Login/Profile
 if st.session_state.current_user is None:
-    st.markdown("<h2 style='text-align:center;'>Welcome to AnantaKolam Community</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align:center; color:#1E3A8A; font-family:Lato, sans-serif;'>Welcome to SymmetriX Community</h2>", unsafe_allow_html=True)
     with st.container():
         cols = st.columns([1,2,1])
         with cols[1]:
+            st.markdown('<div class="form-container">', unsafe_allow_html=True)
             name = st.text_input("Enter your display name")
             bio = st.text_area("Short bio (optional)")
             if st.button("Login / Create"):
@@ -175,16 +302,17 @@ if st.session_state.current_user is None:
                     st.session_state.current_user = {'id': user[0], 'name': user[1], 'bio': user[2]}
                     st.success(f"Logged in as {user[1]}")
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 else:
     u = st.session_state.current_user
-    st.markdown(f"<h3 style='text-align:center;'>Hello, {u['name']}</h3>", unsafe_allow_html=True)
-    st.markdown(f"<p style='text-align:center;'>{u.get('bio','')}</p>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align:center; color:#1E3A8A; font-family:Lato, sans-serif;'>Hello, {u['name']}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<p style='text-align:center; color:#2C3E50; font-family:Lato, sans-serif;'>{u.get('bio','')}</p>", unsafe_allow_html=True)
     if st.button("Logout"):
         st.session_state.current_user = None
         st.rerun()
 
 if st.session_state.current_user:
-    st.header("Community — Share Kolams, find events, win prizes")
+    st.markdown("<h2 style='color:#1E3A8A; font-family:Lato, sans-serif;'>Community — Share Kolams, find events, win prizes</h2>", unsafe_allow_html=True)
     tabs = st.tabs(["Feed","Upload","Events & Map","Artists","Leaderboard"])
 
     # --- Feed ---
@@ -192,6 +320,7 @@ if st.session_state.current_user:
         posts = get_posts(conn)
         for post in posts:
             post_id, author, title, desc, state, kolam_type, tags, img_path, created_at, likes, user_id = post
+            st.markdown('<div class="card">', unsafe_allow_html=True)
             cols = st.columns([1,3])
             with cols[0]:
                 if img_path and os.path.exists(img_path):
@@ -212,10 +341,12 @@ if st.session_state.current_user:
                 if st.button("Post", key=f"postc_{post_id}") and comment.strip():
                     add_comment(conn, post_id, st.session_state.current_user['id'], comment.strip())
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # --- Upload ---
     with tabs[1]:
         with st.form("upload_form"):
+            st.markdown('<div class="form-container">', unsafe_allow_html=True)
             title = st.text_input("Title")
             desc = st.text_area("Description")
             state = st.selectbox("State", ['Tamil Nadu','Kerala','Karnataka','Andhra Pradesh','Odisha','Other'])
@@ -228,10 +359,12 @@ if st.session_state.current_user:
                     create_post(conn, st.session_state.current_user['id'], title.strip(), desc.strip(), state, kolam_type, tags.strip(), path)
                     st.success("Uploaded!")
                     st.rerun()
+            st.markdown('</div>', unsafe_allow_html=True)
 
     # --- Events & Map ---
     with tabs[2]:
         st.subheader("Events")
+        st.markdown('<div class="form-container">', unsafe_allow_html=True)
         e_title = st.text_input("Event Title")
         e_desc = st.text_area("Description")
         e_date = st.date_input("Date")
@@ -245,6 +378,7 @@ if st.session_state.current_user:
                 st.rerun()
             except:
                 st.error("Invalid lat/lon")
+        st.markdown('</div>', unsafe_allow_html=True)
 
         events = get_upcoming_events(conn)
         if events:
@@ -269,4 +403,5 @@ if st.session_state.current_user:
         else:
             st.write("No posts yet")
 
-st.caption("AnantaKolam Community demo — add authentication and cloud storage for production")
+st.markdown('</div>', unsafe_allow_html=True)
+st.caption("SymmetriX Community demo — add authentication and cloud storage for production")
