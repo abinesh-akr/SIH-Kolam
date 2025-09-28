@@ -14,119 +14,211 @@ from streamlit_drawable_canvas import st_canvas
 
 st.set_page_config(page_title="Kolam Creator", layout="wide")
 
-# Custom CSS for blue theme and new animations
+# Custom CSS with enhanced Kolam-themed styling
 st.markdown("""
 <style>
-/* Import Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;600;700&display=swap');
-
-/* Reset default styles */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* Hide Streamlit default footer */
-footer {visibility: hidden;}
-
-/* Main container */
-.main-content {
-    background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
-    padding: 2rem;
-    min-height: 100vh;
-    margin-top: 80px;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Floating dots animation */
-.floating-dot {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: radial-gradient(circle, #3B82F6, transparent);
-    border-radius: 50%;
-    animation: floatPulse 5s ease-in-out infinite;
-}
-
-.dot-1 { top: 5%; left: 5%; animation-delay: 0s; }
-.dot-2 { top: 15%; right: 5%; animation-delay: 1.5s; }
-.dot-3 { bottom: 10%; left: 10%; animation-delay: 3s; }
-
-@keyframes floatPulse {
-    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
-    50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
-}
-
-/* Hero section */
-.hero-section {
-    background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
-    padding: 3rem;
-    text-align: center;
-    border-radius: 15px;
-    margin-bottom: 2rem;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 3.5rem;
-    color: #1E3A8A;
-    margin-bottom: 0.5rem;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-
-@keyframes glow {
-    from { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
-    to { text-shadow: 0 2px 8px rgba(59, 130, 246, 0.5); }
-}
-
-.hero-subtitle {
-    font-family: 'Lato', sans-serif;
-    font-size: 1.6rem;
-    color: #3B82F6;
-    animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-/* Container styling */
- .settings-container, .tips-container {
-    background: #F8FAFC;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    margin: 1rem 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.drawing-container:hover, .settings-container:hover, .tips-container:hover {
-    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
-    background: linear-gradient(135deg, #F8FAFC, #DBEAFE);
-}
-
-.drawing-container::before, .settings-container::before, .tips-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.3), transparent);
-    transition: 0.5s;
-}
-
-.drawing-container:hover::before, .settings-container:hover::before, .tips-container:hover::before {
-    left: 100%;
-}
-            /* Container styling */
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;600;700&family=Dancing+Script:wght@400;700&display=swap');
+    
+    /* Hide Streamlit default elements */
+    footer {visibility: hidden;}
+    
+    /* Main container styling */
+    .main > div {
+        padding-top: 1rem;
+    }
+    
+    /* Animated background */
+    body {
+        background: linear-gradient(-45deg, #FFE4E1, #E6E6FA, #E8F5E8, #FFEAA7);
+        background-size: 400% 400%;
+        animation: gradientShift 15s ease infinite;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Animated Kolam patterns */
+    .kolam-pattern-large {
+        width: 120px;
+        height: 120px;
+        position: relative;
+        margin: 20px auto;
+        animation: rotate 12s linear infinite;
+    }
+    
+    .kolam-pattern-large::before {
+        content: '';
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: #FF69B4;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow:
+            0 -40px 0 #FF69B4,
+            40px -40px 0 #9370DB,
+            40px 0 0 #20B2AA,
+            40px 40px 0 #FFD700,
+            0 40px 0 #FF69B4,
+            -40px 40px 0 #32CD32,
+            -40px 0 0 #FF6347,
+            -40px -40px 0 #4169E1,
+            0 -20px 0 #FF69B4,
+            20px -20px 0 #9370DB,
+            20px 0 0 #20B2AA,
+            20px 20px 0 #FFD700,
+            0 20px 0 #FF69B4,
+            -20px 20px 0 #32CD32,
+            -20px 0 0 #FF6347,
+            -20px -20px 0 #4169E1;
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    .kolam-pattern-small {
+        width: 80px;
+        height: 80px;
+        position: relative;
+        margin: 15px auto;
+        animation: float 4s ease-in-out infinite;
+    }
+    
+    .kolam-pattern-small::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border: 4px solid #FF69B4;
+        border-radius: 50%;
+        animation: ripple 4s ease-out infinite;
+    }
+    
+    .kolam-pattern-small::after {
+        content: '';
+        position: absolute;
+        width: 60%;
+        height: 60%;
+        top: 20%;
+        left: 20%;
+        border: 3px solid #9370DB;
+        border-radius: 50%;
+        animation: ripple 4s ease-out infinite 1.5s;
+    }
+    
+    .kolam-pattern-mini {
+        width: 60px;
+        height: 60px;
+        position: relative;
+        margin: 10px auto;
+        animation: spin 8s linear infinite reverse;
+    }
+    
+    .kolam-pattern-mini::before {
+        content: '';
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: #FFD700;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow:
+            0 -20px 0 #FF69B4,
+            20px -20px 0 #9370DB,
+            20px 0 0 #20B2AA,
+            20px 20px 0 #FFD700,
+            0 20px 0 #FF69B4,
+            -20px 20px 0 #32CD32,
+            -20px 0 0 #FF6347,
+            -20px -20px 0 #4169E1;
+        animation: twinkle 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes ripple {
+        0% { transform: scale(0.6); opacity: 1; }
+        100% { transform: scale(1.8); opacity: 0; }
+    }
+    
+    @keyframes rotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    
+    @keyframes spin {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+    
+    @keyframes twinkle {
+        0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+        100% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    }
+    
+    /* Hero section */
+    .hero-section {
+        background: linear-gradient(135deg, #FFE4E1 40%, #FEFAA7 60%, #E6E6FA 10%);
+        padding: 50px 40px;
+        text-align: center;
+        border-radius: 30px;
+        margin-bottom: 30px;
+        box-shadow: 
+            0 20px 60px rgba(0,0,0,0.1),
+            inset 0 1px 0 rgba(255,255,255,0.6);
+        position: relative;
+        overflow: hidden;
+        background-size: 200% 200%;
+        animation: gradientShift 10s ease infinite;
+    }
+    
+    .hero-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #5D6D7E;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 2;
+        text-shadow: 3px 3px 6px rgba(255,255,255,0.8);
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+    
+    @keyframes titleGlow {
+        from { text-shadow: 3px 3px 6px rgba(255,255,255,0.8); }
+        to { text-shadow: 3px 3px 20px rgba(255,182,193,0.6), 0 0 30px rgba(255,182,193,0.4); }
+    }
+    
+    .hero-subtitle {
+        font-family: 'Dancing Script', cursive;
+        font-size: 1.6rem;
+        color: #5D6D7E;
+        font-weight: 700;
+        position: relative;
+        z-index: 2;
+        animation: subtitleFloat 4s ease-in-out infinite;
+    }
+    
+    @keyframes subtitleFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+    }
+    
+    /* Container styling */
     .drawing-container {
         background: rgba(255,255,255,0.95);
         padding: 40px;
@@ -136,83 +228,104 @@ footer {visibility: hidden;}
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255,255,255,0.2);
     }
-
-/* Section title */
-.section-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    color: #1E3A8A;
-    margin-bottom: 1rem;
-    text-align: center;
-    position: relative;
-}
-
-.section-title::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-    height: 3px;
-    background: linear-gradient(90deg, #1E3A8A, #3B82F6);
-    border-radius: 2px;
-}
-
-/* Button styling */
-.stButton > button {
-    background: linear-gradient(135deg, #1E3A8A, #3B82F6);
-    color: #EFF6FF !important;
-    border: none !important;
-    border-radius: 8px !important;
-    padding: 0.5rem 1rem !important;
-    font-family: 'Lato', sans-serif !important;
-    font-weight: 500 !important;
-    transition: all 0.3s ease !important;
-}
-
-.stButton > button:hover {
-    background: linear-gradient(135deg, #3B82F6, #93C5FD);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
-    transform: translateY(-2px);
-}
-
-/* Color grid */
-.color-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-    gap: 1rem;
-    margin: 1rem 0;
-}
-
-/* Tabs styling */
-.stTabs [data-baseweb="tab"] {
-    background: blue;
-    border-radius: 8px;
-    margin: 0.5rem;
-    color : white;
-    transition: all 0.3s ease;
-}
-
-.stTabs [data-baseweb="tab"]:hover {
-    background: #DBEAFE;
-    transform: translateY(-2px);
-}
-
-.stTabs [data-baseweb="tab-highlight"] {
-    background: #3B82F6;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .hero-title { font-size: 2.5rem; }
-    .hero-subtitle { font-size: 1.2rem; }
-    .section-title { font-size: 1.5rem; }
-    .main-content { padding: 1rem; }
-}
+    
+    .settings-container {
+        background: rgba(255,255,255,0.9);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        margin: 15px 0;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .section-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2C3E50;
+        margin-bottom: 20px;
+        text-align: center;
+        position: relative;
+    }
+    
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, #FF69B4, #9370DB);
+        border-radius: 2px;
+    }
+    
+    /* Color button styling */
+    .color-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+    }
+    
+    .stButton > button {
+        background: linear-gradient(135deg, #FF69B4, #9370DB);
+        color: white !important;
+        border: none !important;
+        border-radius: 15px !important;
+        padding: 12px 24px !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 5px 15px rgba(255,105,180,0.4) !important;
+        font-family: 'Lato', sans-serif !important;
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(255,105,180,0.6) !important;
+    }
+    
+    /* Slider styling */
+    .stSlider > div > div > div {
+        background: linear-gradient(90deg, #FF69B4, #9370DB);
+    }
+    
+    /* Select box styling */
+    .stSelectbox > div > div {
+        background: rgba(255,255,255,0.9);
+        border-radius: 12px;
+        border: 2px solid t...(truncated 1911 characters)...: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-25px) rotate(180deg); }
+    }
+    
+    /* Tips section special styling */
+    .tips-container {
+        background: linear-gradient(135deg, rgba(232,245,232,0.9), rgba(255,228,225,0.9));
+        padding: 25px;
+        border-radius: 20px;
+        margin: 20px 0;
+        border: 2px solid rgba(50,205,50,0.3);
+    }
+    
+    .tips-title {
+        font-family: 'Playfair Display', serif;
+        color: #2C3E50;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .hero-title { font-size: 2.5rem; }
+        .hero-subtitle { font-size: 1.3rem; }
+        .drawing-container { padding: 25px; }
+        .settings-container { padding: 20px; }
+    }
 </style>
 """, unsafe_allow_html=True)
-
 
 st.title("🎨 Kolam Creator")
 st.write("Recreate Kolams through generation or drawing.")
