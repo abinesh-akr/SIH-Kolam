@@ -14,211 +14,119 @@ from streamlit_drawable_canvas import st_canvas
 
 st.set_page_config(page_title="Kolam Creator", layout="wide")
 
-# Custom CSS with enhanced Kolam-themed styling
+# Custom CSS for blue theme and new animations
 st.markdown("""
 <style>
-    /* Import Google Fonts */
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;600;700&family=Dancing+Script:wght@400;700&display=swap');
-    
-    /* Hide Streamlit default elements */
-    footer {visibility: hidden;}
-    
-    /* Main container styling */
-    .main > div {
-        padding-top: 1rem;
-    }
-    
-    /* Animated background */
-    body {
-        background: linear-gradient(-45deg, #FFE4E1, #E6E6FA, #E8F5E8, #FFEAA7);
-        background-size: 400% 400%;
-        animation: gradientShift 15s ease infinite;
-    }
-    
-    @keyframes gradientShift {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-    }
-    
-    /* Animated Kolam patterns */
-    .kolam-pattern-large {
-        width: 120px;
-        height: 120px;
-        position: relative;
-        margin: 20px auto;
-        animation: rotate 12s linear infinite;
-    }
-    
-    .kolam-pattern-large::before {
-        content: '';
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        background: #FF69B4;
-        border-radius: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        box-shadow:
-            0 -40px 0 #FF69B4,
-            40px -40px 0 #9370DB,
-            40px 0 0 #20B2AA,
-            40px 40px 0 #FFD700,
-            0 40px 0 #FF69B4,
-            -40px 40px 0 #32CD32,
-            -40px 0 0 #FF6347,
-            -40px -40px 0 #4169E1,
-            0 -20px 0 #FF69B4,
-            20px -20px 0 #9370DB,
-            20px 0 0 #20B2AA,
-            20px 20px 0 #FFD700,
-            0 20px 0 #FF69B4,
-            -20px 20px 0 #32CD32,
-            -20px 0 0 #FF6347,
-            -20px -20px 0 #4169E1;
-        animation: pulse 3s ease-in-out infinite;
-    }
-    
-    .kolam-pattern-small {
-        width: 80px;
-        height: 80px;
-        position: relative;
-        margin: 15px auto;
-        animation: float 4s ease-in-out infinite;
-    }
-    
-    .kolam-pattern-small::before {
-        content: '';
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        border: 4px solid #FF69B4;
-        border-radius: 50%;
-        animation: ripple 4s ease-out infinite;
-    }
-    
-    .kolam-pattern-small::after {
-        content: '';
-        position: absolute;
-        width: 60%;
-        height: 60%;
-        top: 20%;
-        left: 20%;
-        border: 3px solid #9370DB;
-        border-radius: 50%;
-        animation: ripple 4s ease-out infinite 1.5s;
-    }
-    
-    .kolam-pattern-mini {
-        width: 60px;
-        height: 60px;
-        position: relative;
-        margin: 10px auto;
-        animation: spin 8s linear infinite reverse;
-    }
-    
-    .kolam-pattern-mini::before {
-        content: '';
-        position: absolute;
-        width: 4px;
-        height: 4px;
-        background: #FFD700;
-        border-radius: 50%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        box-shadow:
-            0 -20px 0 #FF69B4,
-            20px -20px 0 #9370DB,
-            20px 0 0 #20B2AA,
-            20px 20px 0 #FFD700,
-            0 20px 0 #FF69B4,
-            -20px 20px 0 #32CD32,
-            -20px 0 0 #FF6347,
-            -20px -20px 0 #4169E1;
-        animation: twinkle 2s ease-in-out infinite alternate;
-    }
-    
-    @keyframes ripple {
-        0% { transform: scale(0.6); opacity: 1; }
-        100% { transform: scale(1.8); opacity: 0; }
-    }
-    
-    @keyframes rotate {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-    
-    @keyframes spin {
-        from { transform: rotate(360deg); }
-        to { transform: rotate(0deg); }
-    }
-    
-    @keyframes pulse {
-        0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(180deg); }
-    }
-    
-    @keyframes twinkle {
-        0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
-        100% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    }
-    
-    /* Hero section */
-    .hero-section {
-        background: linear-gradient(135deg, #FFE4E1 40%, #FEFAA7 60%, #E6E6FA 10%);
-        padding: 50px 40px;
-        text-align: center;
-        border-radius: 30px;
-        margin-bottom: 30px;
-        box-shadow: 
-            0 20px 60px rgba(0,0,0,0.1),
-            inset 0 1px 0 rgba(255,255,255,0.6);
-        position: relative;
-        overflow: hidden;
-        background-size: 200% 200%;
-        animation: gradientShift 10s ease infinite;
-    }
-    
-    .hero-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #5D6D7E;
-        margin-bottom: 0.5rem;
-        position: relative;
-        z-index: 2;
-        text-shadow: 3px 3px 6px rgba(255,255,255,0.8);
-        animation: titleGlow 3s ease-in-out infinite alternate;
-    }
-    
-    @keyframes titleGlow {
-        from { text-shadow: 3px 3px 6px rgba(255,255,255,0.8); }
-        to { text-shadow: 3px 3px 20px rgba(255,182,193,0.6), 0 0 30px rgba(255,182,193,0.4); }
-    }
-    
-    .hero-subtitle {
-        font-family: 'Dancing Script', cursive;
-        font-size: 1.6rem;
-        color: #5D6D7E;
-        font-weight: 700;
-        position: relative;
-        z-index: 2;
-        animation: subtitleFloat 4s ease-in-out infinite;
-    }
-    
-    @keyframes subtitleFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-8px); }
-    }
-    
-    /* Container styling */
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Lato:wght@300;400;600;700&display=swap');
+
+/* Reset default styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Hide Streamlit default footer */
+footer {visibility: hidden;}
+
+/* Main container */
+.main-content {
+    background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
+    padding: 2rem;
+    min-height: 100vh;
+    margin-top: 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Floating dots animation */
+.floating-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #3B82F6, transparent);
+    border-radius: 50%;
+    animation: floatPulse 5s ease-in-out infinite;
+}
+
+.dot-1 { top: 5%; left: 5%; animation-delay: 0s; }
+.dot-2 { top: 15%; right: 5%; animation-delay: 1.5s; }
+.dot-3 { bottom: 10%; left: 10%; animation-delay: 3s; }
+
+@keyframes floatPulse {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.7; }
+    50% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+}
+
+/* Hero section */
+.hero-section {
+    background: linear-gradient(135deg, #DBEAFE, #EFF6FF);
+    padding: 3rem;
+    text-align: center;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    color: #1E3A8A;
+    margin-bottom: 0.5rem;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
+    to { text-shadow: 0 2px 8px rgba(59, 130, 246, 0.5); }
+}
+
+.hero-subtitle {
+    font-family: 'Lato', sans-serif;
+    font-size: 1.6rem;
+    color: #3B82F6;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Container styling */
+ .settings-container, .tips-container {
+    background: #F8FAFC;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin: 1rem 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.drawing-container:hover, .settings-container:hover, .tips-container:hover {
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(135deg, #F8FAFC, #DBEAFE);
+}
+
+.drawing-container::before, .settings-container::before, .tips-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.3), transparent);
+    transition: 0.5s;
+}
+
+.drawing-container:hover::before, .settings-container:hover::before, .tips-container:hover::before {
+    left: 100%;
+}
+            /* Container styling */
     .drawing-container {
         background: rgba(255,255,255,0.95);
         padding: 40px;
@@ -228,149 +136,101 @@ st.markdown("""
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255,255,255,0.2);
     }
-    
-    .settings-container {
-        background: rgba(255,255,255,0.9);
-        padding: 30px;
-        border-radius: 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-        margin: 15px 0;
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255,255,255,0.3);
-    }
-    
-    .section-title {
-        font-family: 'Playfair Display', serif;
-        font-size: 2rem;
-        font-weight: 700;
-        color: #2C3E50;
-        margin-bottom: 20px;
-        text-align: center;
-        position: relative;
-    }
-    
-    .section-title::after {
-        content: '';
-        position: absolute;
-        bottom: -8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 50px;
-        height: 3px;
-        background: linear-gradient(90deg, #FF69B4, #9370DB);
-        border-radius: 2px;
-    }
-    
-    /* Color button styling */
-    .color-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-        gap: 15px;
-        margin: 20px 0;
-    }
-    
-    .stButton > button {
-        background: linear-gradient(135deg, #FF69B4, #9370DB);
-        color: white !important;
-        border: none !important;
-        border-radius: 15px !important;
-        padding: 12px 24px !important;
-        font-size: 1rem !important;
-        font-weight: 600 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 5px 15px rgba(255,105,180,0.4) !important;
-        font-family: 'Lato', sans-serif !important;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px) !important;
-        box-shadow: 0 8px 25px rgba(255,105,180,0.6) !important;
-    }
-    
-    /* Slider styling */
-    .stSlider > div > div > div {
-        background: linear-gradient(90deg, #FF69B4, #9370DB);
-    }
-    
-    /* Select box styling */
-    .stSelectbox > div > div {
-        background: rgba(255,255,255,0.9);
-        border-radius: 12px;
-        border: 2px solid t...(truncated 1911 characters)...: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-25px) rotate(180deg); }
-    }
-    
-    /* Tips section special styling */
-    .tips-container {
-        background: linear-gradient(135deg, rgba(232,245,232,0.9), rgba(255,228,225,0.9));
-        padding: 25px;
-        border-radius: 20px;
-        margin: 20px 0;
-        border: 2px solid rgba(50,205,50,0.3);
-    }
-    
-    .tips-title {
-        font-family: 'Playfair Display', serif;
-        color: #2C3E50;
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 15px;
-    }
-    
-    /* Responsive design */
-    @media (max-width: 768px) {
-        .hero-title { font-size: 2.5rem; }
-        .hero-subtitle { font-size: 1.3rem; }
-        .drawing-container { padding: 25px; }
-        .settings-container { padding: 20px; }
-    }
+
+/* Section title */
+.section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: #1E3A8A;
+    margin-bottom: 1rem;
+    text-align: center;
+    position: relative;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(90deg, #1E3A8A, #3B82F6);
+    border-radius: 2px;
+}
+
+/* Button styling */
+.stButton > button {
+    background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+    color: #EFF6FF !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1rem !important;
+    font-family: 'Lato', sans-serif !important;
+    font-weight: 500 !important;
+    transition: all 0.3s ease !important;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, #3B82F6, #93C5FD);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5);
+    transform: translateY(-2px);
+}
+
+/* Color grid */
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+/* Tabs styling */
+.stTabs [data-baseweb="tab"] {
+    background: blue;
+    border-radius: 8px;
+    margin: 0.5rem;
+    color : white;
+    transition: all 0.3s ease;
+}
+
+.stTabs [data-baseweb="tab"]:hover {
+    background: #DBEAFE;
+    transform: translateY(-2px);
+}
+
+.stTabs [data-baseweb="tab-highlight"] {
+    background: #3B82F6;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .hero-subtitle { font-size: 1.2rem; }
+    .section-title { font-size: 1.5rem; }
+    .main-content { padding: 1rem; }
+}
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🎨 Kolam Creator")
-st.write("Recreate Kolams through generation or drawing.")
 
-tab1, tab2 = st.tabs(["AI Prompt Generation", "Canvas & Brush"])
+
+# Tabs
+tab1, tab2 = st.tabs(["AI Kolam Generator", "Interactive Drawing Canvas"])
 
 with tab1:
-    # Code from Kolam.py (assuming it's the prompt-based)
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    # Sidebar for AI Kolam Generator
+    st.sidebar.header("🎨 AI Kolam Generator Settings")
+    kolam_type = st.sidebar.selectbox("Kolam Type", ["Traditional", "Sikku", "Rangoli", "Geometric"])
+    state = st.sidebar.selectbox("State", ["Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Odisha"])
+    complexity = st.sidebar.slider("Complexity", 0.1, 1.0, 0.5)
+    grid_size = st.sidebar.slider("Grid Size", 3, 10, 5)
+    color_scheme = st.sidebar.selectbox("Color Scheme", ["White", "Multicolor", "Custom"])
+    occasion = st.sidebar.selectbox("Occasion", ["Daily", "Festival", "Wedding", "Ceremony"])
+    custom_elements = st.sidebar.text_area("Custom Elements (e.g., peacock, floral)", height=100)
 
     def create_advanced_kolam_prompt(kolam_type, state, complexity, grid_size, color_scheme, occasion, custom_elements):
-        prompt = """
-        Generate a high-quality, artistic Kolam (Rangoli) design based on the following details:
-
-        - Type: Symmetric Kolam design with dots (pulli) as a base grid.
-        - Grid: Use a 1-3-5-7-9-7-5-3-1 stepped dot grid.
-        - Style: Traditional South Indian Kolam, drawn with white rice powder on a dark, wet floor background.
-        - Lines: Smooth, curvilinear, continuous loops enclosing all dots.
-        - Symmetry: Both reflectional and rotational symmetry must be present.
-        - Visual feel: Elegant, culturally authentic, geometric, and mathematically balanced.
-        - Avoid text, borders, or watermarks.
-        - Make it look hand-drawn but neat, with fine white strokes.
-        - Output: A single, clear Kolam pattern with focus on the design — no extra decorations, no people, no objects.
-        """
-        return prompt
-
-    col1, col2 = st.columns(2)
-    with col1:
-        kolam_type = st.selectbox("Kolam Style", ["Sikku Kolam", "Pulli Kolam", "Rangoli", "Freehand Kolam",
-                                                  "Geometric Kolam", "Floral Kolam", "Festival Special"], index=2)
-        state = st.selectbox("Regional Style", ["Tamil Nadu", "Karnataka", "Andhra Pradesh", "Kerala", "Telangana"])
-
-    with col2:
-        complexity = st.selectbox("Complexity", ["Beginner", "Intermediate", "Advanced", "Master Level"], index=1)
-        grid_size = st.slider("Pattern Density", 8, 20, 12)
-
-    color_scheme = st.sidebar.selectbox("Color Theme", ["Vibrant Festival", "Royal Colors", "Pastel Dream",
-                                                       "Nature Inspired", "Traditional White", "Monochrome Elegant"])
-
-    occasion = st.sidebar.selectbox("Special Occasion", ["Daily Practice", "Diwali", "Pongal",
-                                                        "Wedding", "Navratri", "Housewarming"])
-
-    custom_elements = st.sidebar.text_area("Custom Elements",
-                                           placeholder="e.g., peacock motifs, lotus flowers, temple arches...",
-                                           height=80)
+        return f"Generate a {kolam_type} Kolam design from {state} with complexity level {complexity}, grid size {grid_size}x{grid_size}, using {color_scheme} colors, suitable for {occasion}. Include {custom_elements} if specified."
 
     if st.sidebar.button("🎨 Create Stunning Kolam", type="primary", use_container_width=True):
         with st.spinner("🎭 AI is creating your masterpiece..."):
@@ -378,22 +238,22 @@ with tab1:
                 advanced_prompt = create_advanced_kolam_prompt(
                     kolam_type, state, complexity, grid_size, color_scheme, occasion, custom_elements
                 )
-
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash-image-preview",
-                    contents=advanced_prompt
-                )
-
+                # Mock response for demonstration (replace with actual API call)
+                response = type('MockResponse', (), {
+                    'candidates': [type('MockCandidate', (), {
+                        'content': type('MockContent', (), {
+                            'parts': [type('MockPart', (), {'inline_data': type('MockData', (), {'data': BytesIO()})()})]
+                        })()
+                    })()]
+                })()
                 image_parts = [
                     part.inline_data.data
                     for part in response.candidates[0].content.parts
                     if part.inline_data
                 ]
-
                 if image_parts:
-                    image = Image.open(BytesIO(image_parts[0]))
+                    image = Image.open(image_parts[0])
                     st.image(image, use_container_width=True, caption=f"✨ {kolam_type} Kolam from {state}")
-
                     img_buffer = BytesIO()
                     image.save(img_buffer, format="PNG")
                     st.download_button(
@@ -405,30 +265,28 @@ with tab1:
                     )
                 else:
                     st.error("⚠️ No image was generated. Try again with a different configuration.")
-
             except Exception as e:
                 st.error(f"❌ Error: {str(e)}")
                 st.info("💡 Check your API connection or simplify your prompt.")
 
 with tab2:
-
-
     # Hero Section
     st.markdown("""
     <div class="hero-section">
-        <div class="kolam-pattern-large"></div>
+        <div class="floating-dot dot-1"></div>
+        <div class="floating-dot dot-2"></div>
+        <div class="floating-dot dot-3"></div>
         <h1 class="hero-title">🎨 Kolam Drawing Canvas</h1>
         <p class="hero-subtitle">Multi-Brush • Symmetry • Sacred Geometry</p>
-        <div class="kolam-pattern-small"></div>
     </div>
     """, unsafe_allow_html=True)
 
     # Instructions / Tips
     st.markdown("""
     <div class="tips-container">
-        <div class="tips-title">✨ Tips for Drawing Beautiful Kolam</div>
+        <div class="section-title">✨ Tips for Drawing Beautiful Kolam</div>
         <ul style="font-family: 'Lato', sans-serif; color: #2C3E50; line-height: 1.6;">
-            <li>🎨 Use light colors for intricate patterns</li>
+            <li>🎨 Use vibrant colors for intricate patterns</li>
             <li>🖌️ Try different brush sizes and shapes</li>
             <li>🔄 Enable mirror symmetry for authentic Kolam designs</li>
             <li>💾 Download your final masterpiece when done</li>
@@ -437,7 +295,7 @@ with tab2:
     </div>
     """, unsafe_allow_html=True)
 
-    # Canvas & Brush Settings
+     # Canvas & Brush Settings
     st.markdown('<div class="settings-container">', unsafe_allow_html=True)
     st.markdown('<h2 class="section-title">🎨 Canvas & Brush Settings</h2>', unsafe_allow_html=True)
 
