@@ -1,16 +1,21 @@
+# kolam_drawing_app.py
 import streamlit as st
-import time
-import math
+import numpy as np
+from PIL import Image
+from streamlit_drawable_canvas import st_canvas
+import io
 
-# Page configuration
+# -----------------------------
+# Page config
+# -----------------------------
 st.set_page_config(
-    page_title="Kolam - Ancient Art of South India",
-    page_icon="🌸",
+    page_title="Kolam Drawing Canvas", 
+    page_icon="🎨",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# Custom CSS with animated Kolam patterns and enhanced visuals
+# Custom CSS with enhanced Kolam-themed styling
 st.markdown("""
 <style>
     /* Import Google Fonts */
@@ -38,109 +43,113 @@ st.markdown("""
     }
     
     /* Animated Kolam patterns */
-    .kolam-pattern-1 {
-        width: 60px;
-        height: 60px;
+    .kolam-pattern-large {
+        width: 120px;
+        height: 120px;
         position: relative;
         margin: 20px auto;
-        animation: rotate 8s linear infinite;
+        animation: rotate 12s linear infinite;
     }
     
-    .kolam-pattern-1::before {
+    .kolam-pattern-large::before {
         content: '';
         position: absolute;
-        width: 4px;
-        height: 4px;
+        width: 8px;
+        height: 8px;
         background: #FF69B4;
         border-radius: 50%;
-        top: 0;
+        top: 50%;
         left: 50%;
-        transform: translateX(-50%);
-        box-shadow: 
-            0 15px 0 #FF69B4,
-            0 30px 0 #FF69B4,
-            0 45px 0 #FF69B4,
-            15px 7.5px 0 #FF1493,
-            15px 22.5px 0 #FF1493,
-            15px 37.5px 0 #FF1493,
-            -15px 7.5px 0 #FF1493,
-            -15px 22.5px 0 #FF1493,
-            -15px 37.5px 0 #FF1493;
-    }
-    
-    .kolam-pattern-2 {
-        width: 80px;
-        height: 80px;
-        position: relative;
-        margin: 20px auto;
+        transform: translate(-50%, -50%);
+        box-shadow:
+            0 -40px 0 #FF69B4,
+            40px -40px 0 #9370DB,
+            40px 0 0 #20B2AA,
+            40px 40px 0 #FFD700,
+            0 40px 0 #FF69B4,
+            -40px 40px 0 #32CD32,
+            -40px 0 0 #FF6347,
+            -40px -40px 0 #4169E1,
+            0 -20px 0 #FF69B4,
+            20px -20px 0 #9370DB,
+            20px 0 0 #20B2AA,
+            20px 20px 0 #FFD700,
+            0 20px 0 #FF69B4,
+            -20px 20px 0 #32CD32,
+            -20px 0 0 #FF6347,
+            -20px -20px 0 #4169E1;
         animation: pulse 3s ease-in-out infinite;
     }
     
-    .kolam-pattern-2::before {
+    .kolam-pattern-small {
+        width: 80px;
+        height: 80px;
+        position: relative;
+        margin: 15px auto;
+        animation: float 4s ease-in-out infinite;
+    }
+    
+    .kolam-pattern-small::before {
         content: '';
         position: absolute;
         width: 100%;
         height: 100%;
-        border: 3px solid #9370DB;
+        border: 4px solid #FF69B4;
         border-radius: 50%;
-        animation: ripple 2s ease-out infinite;
+        animation: ripple 4s ease-out infinite;
     }
     
-    .kolam-pattern-2::after {
+    .kolam-pattern-small::after {
         content: '';
         position: absolute;
         width: 60%;
         height: 60%;
         top: 20%;
         left: 20%;
-        border: 2px solid #DA70D6;
+        border: 3px solid #9370DB;
         border-radius: 50%;
-        animation: ripple 2s ease-out infinite 0.5s;
+        animation: ripple 4s ease-out infinite 1.5s;
     }
     
-    @keyframes ripple {
-        0% {
-            transform: scale(0.8);
-            opacity: 1;
-        }
-        100% {
-            transform: scale(1.2);
-            opacity: 0;
-        }
-    }
-    
-    .kolam-pattern-3 {
-        width: 100px;
-        height: 100px;
+    .kolam-pattern-mini {
+        width: 60px;
+        height: 60px;
         position: relative;
-        margin: 20px auto;
+        margin: 10px auto;
+        animation: spin 8s linear infinite reverse;
     }
     
-    .kolam-pattern-3::before {
+    .kolam-pattern-mini::before {
         content: '';
         position: absolute;
-        width: 6px;
-        height: 6px;
-        background: #20B2AA;
+        width: 4px;
+        height: 4px;
+        background: #FFD700;
         border-radius: 50%;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         box-shadow:
-            0 -25px 0 #20B2AA,
-            25px -25px 0 #20B2AA,
-            25px 0 0 #20B2AA,
-            25px 25px 0 #20B2AA,
-            0 25px 0 #20B2AA,
-            -25px 25px 0 #20B2AA,
-            -25px 0 0 #20B2AA,
-            -25px -25px 0 #20B2AA;
-        animation: twinkle 2s ease-in-out infinite;
+            0 -20px 0 #FF69B4,
+            20px -20px 0 #9370DB,
+            20px 0 0 #20B2AA,
+            20px 20px 0 #FFD700,
+            0 20px 0 #FF69B4,
+            -20px 20px 0 #32CD32,
+            -20px 0 0 #FF6347,
+            -20px -20px 0 #4169E1;
+        animation: twinkle 2s ease-in-out infinite alternate;
     }
     
-    @keyframes twinkle {
-        0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    @keyframes ripple {
+        0% {
+            transform: scale(0.6);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(1.8);
+            opacity: 0;
+        }
     }
     
     @keyframes rotate {
@@ -148,18 +157,33 @@ st.markdown("""
         to { transform: rotate(360deg); }
     }
     
-    @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
+    @keyframes spin {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
     }
     
-    /* Hero section with enhanced animations */
+    @keyframes pulse {
+        0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+        50% { opacity: 1; transform: translate(-50%, -50%) scale(1.3); }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-20px) rotate(180deg); }
+    }
+    
+    @keyframes twinkle {
+        0% { opacity: 0.5; transform: translate(-50%, -50%) scale(0.8); }
+        100% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+    }
+    
+    /* Hero section */
     .hero-section {
         background: linear-gradient(135deg, #FFE4E1 0%, #FFEAA7 50%, #E6E6FA 100%);
-        padding: 80px 40px;
+        padding: 50px 40px;
         text-align: center;
         border-radius: 30px;
-        margin-bottom: 40px;
+        margin-bottom: 30px;
         box-shadow: 
             0 20px 60px rgba(0,0,0,0.1),
             inset 0 1px 0 rgba(255,255,255,0.6);
@@ -169,29 +193,12 @@ st.markdown("""
         animation: gradientShift 10s ease infinite;
     }
     
-    .hero-section::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,182,193,0.3) 2px, transparent 2px);
-        background-size: 50px 50px;
-        animation: backgroundMove 20s linear infinite;
-    }
-    
-    @keyframes backgroundMove {
-        0% { transform: translate(0, 0); }
-        100% { transform: translate(50px, 50px); }
-    }
-    
     .hero-title {
         font-family: 'Playfair Display', serif;
-        font-size: 5rem;
+        font-size: 3.5rem;
         font-weight: 900;
         color: #2C3E50;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
         position: relative;
         z-index: 2;
         text-shadow: 3px 3px 6px rgba(255,255,255,0.8);
@@ -205,7 +212,7 @@ st.markdown("""
     
     .hero-subtitle {
         font-family: 'Dancing Script', cursive;
-        font-size: 2rem;
+        font-size: 1.6rem;
         color: #5D6D7E;
         font-weight: 700;
         position: relative;
@@ -215,688 +222,419 @@ st.markdown("""
     
     @keyframes subtitleFloat {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
+        50% { transform: translateY(-8px); }
     }
     
-    /* Enhanced section styling */
-    .section-container {
-        margin: 40px 0;
+    /* Container styling */
+    .drawing-container {
+        background: rgba(255,255,255,0.95);
         padding: 40px;
         border-radius: 25px;
-        box-shadow: 
-            0 15px 35px rgba(0,0,0,0.1),
-            0 5px 15px rgba(0,0,0,0.05);
-        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        margin: 20px 0;
         backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
     }
     
-    .section-container::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        transition: left 0.5s;
-    }
-    
-    .section-container:hover::before {
-        left: 100%;
-    }
-    
-    .section-container:hover {
-        transform: translateY(-10px) scale(1.02);
-        box-shadow: 
-            0 25px 50px rgba(0,0,0,0.15),
-            0 10px 25px rgba(0,0,0,0.08);
-    }
-    
-    .section-pink { 
-        background: linear-gradient(135deg, #FFE4E1, rgba(255,255,255,0.9));
-        border: 1px solid rgba(255,182,193,0.3);
-    }
-    .section-peach { 
-        background: linear-gradient(135deg, #FFEAA7, rgba(255,255,255,0.9));
-        border: 1px solid rgba(255,215,0,0.3);
-    }
-    .section-lavender { 
-        background: linear-gradient(135deg, #E6E6FA, rgba(255,255,255,0.9));
-        border: 1px solid rgba(147,112,219,0.3);
-    }
-    .section-mint { 
-        background: linear-gradient(135deg, #E8F5E8, rgba(255,255,255,0.9));
-        border: 1px solid rgba(144,238,144,0.3);
-    }
-    .section-blue { 
-        background: linear-gradient(135deg, #E6F3FF, rgba(255,255,255,0.9));
-        border: 1px solid rgba(173,216,230,0.3);
-    }
-    .section-coral { 
-        background: linear-gradient(135deg, #FFB6C1, rgba(255,255,255,0.9));
-        border: 1px solid rgba(255,182,193,0.3);
+    .settings-container {
+        background: rgba(255,255,255,0.9);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        margin: 15px 0;
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.3);
     }
     
     .section-title {
         font-family: 'Playfair Display', serif;
-        font-size: 2.8rem;
+        font-size: 2rem;
         font-weight: 700;
         color: #2C3E50;
+        margin-bottom: 20px;
         text-align: center;
-        margin-bottom: 30px;
         position: relative;
-        z-index: 1;
     }
     
     .section-title::after {
         content: '';
         position: absolute;
-        bottom: -10px;
+        bottom: -8px;
         left: 50%;
         transform: translateX(-50%);
-        width: 60px;
+        width: 50px;
         height: 3px;
         background: linear-gradient(90deg, #FF69B4, #9370DB);
         border-radius: 2px;
     }
     
-    .quote-highlight {
-        background: rgba(255,255,255,0.95);
-        border-left: 6px solid #FF69B4;
-        padding: 25px;
-        margin: 25px 0;
-        border-radius: 0 20px 20px 0;
-        font-style: italic;
-        font-size: 1.3rem;
-        font-weight: 500;
-        color: #2C3E50;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        position: relative;
-        overflow: hidden;
+    /* Color button styling */
+    .color-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
     }
     
-    .quote-highlight::before {
-        content: '"';
-        font-size: 4rem;
-        color: #FF69B4;
-        opacity: 0.3;
-        position: absolute;
-        top: -10px;
-        left: 10px;
-        font-family: 'Playfair Display', serif;
+    .stButton > button {
+        background: linear-gradient(135deg, #FF69B4, #9370DB);
+        color: white !important;
+        border: none !important;
+        border-radius: 15px !important;
+        padding: 12px 24px !important;
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 5px 15px rgba(255,105,180,0.4) !important;
+        font-family: 'Lato', sans-serif !important;
     }
     
-    .highlight-box {
-        background: rgba(255,255,255,0.8);
-        padding: 25px;
-        border-radius: 20px;
-        margin: 25px 0;
-        border: 2px solid rgba(255,182,193,0.4);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-        backdrop-filter: blur(5px);
+    .stButton > button:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(255,105,180,0.6) !important;
     }
     
-    .parallax-section {
-        background: linear-gradient(45deg, #E6E6FA, #E8F5E8, #FFE4E1);
-        background-size: 300% 300%;
-        animation: gradientShift 8s ease infinite;
-        padding: 100px 30px;
-        text-align: center;
-        margin: 60px 0;
-        border-radius: 30px;
-        position: relative;
-        overflow: hidden;
-        box-shadow: inset 0 0 50px rgba(255,255,255,0.3);
+    /* Slider styling */
+    .stSlider > div > div > div {
+        background: linear-gradient(90deg, #FF69B4, #9370DB);
     }
     
-    .parallax-section::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(circle at 20% 50%, rgba(255,182,193,0.3) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 50%, rgba(147,112,219,0.3) 0%, transparent 50%),
-                    radial-gradient(circle at 40% 80%, rgba(144,238,144,0.3) 0%, transparent 50%);
-        animation: backgroundMove 15s ease infinite;
-    }
-    
-    .parallax-text {
-        font-family: 'Playfair Display', serif;
-        font-size: 3rem;
-        color: #2C3E50;
-        font-weight: 700;
-        position: relative;
-        z-index: 2;
-        animation: sparkle 3s ease-in-out infinite;
-    }
-    
-    @keyframes sparkle {
-        0%, 100% { 
-            transform: scale(1);
-            filter: drop-shadow(0 0 10px rgba(255,182,193,0.5));
-        }
-        50% { 
-            transform: scale(1.05);
-            filter: drop-shadow(0 0 20px rgba(255,182,193,0.8));
-        }
-    }
-    
-    .emoji-large {
-        font-size: 4.5rem;
-        margin: 25px 0;
-        display: inline-block;
-        animation: bounce 2s infinite;
-        filter: drop-shadow(0 5px 10px rgba(0,0,0,0.2));
-    }
-    
-    @keyframes bounce {
-        0%, 20%, 50%, 80%, 100% { transform: translateY(0) rotate(0deg); }
-        10% { transform: translateY(-10px) rotate(5deg); }
-        30% { transform: translateY(-15px) rotate(-5deg); }
-        40% { transform: translateY(-10px) rotate(3deg); }
-        60% { transform: translateY(-5px) rotate(-2deg); }
-    }
-    
-    /* Enhanced interactive elements */
-    .interactive-card {
+    /* Select box styling */
+    .stSelectbox > div > div {
         background: rgba(255,255,255,0.9);
-        padding: 20px;
-        border-radius: 15px;
-        margin: 15px 0;
+        border-radius: 12px;
         border: 2px solid transparent;
         transition: all 0.3s ease;
-        cursor: pointer;
     }
     
-    .interactive-card:hover {
+    .stSelectbox > div > div:hover {
         border-color: #FF69B4;
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(255,105,180,0.3);
-        background: rgba(255,255,255,0.95);
     }
     
+    /* Info box styling */
+    .stAlert {
+        background: linear-gradient(135deg, rgba(255,228,225,0.9), rgba(255,234,167,0.9));
+        border-radius: 15px;
+        border: 2px solid rgba(255,105,180,0.3);
+    }
+    
+    /* Download button special styling */
+    .download-section {
+        text-align: center;
+        margin: 30px 0;
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(230,230,250,0.8), rgba(255,228,225,0.8));
+        border-radius: 20px;
+        border: 2px solid rgba(147,112,219,0.3);
+    }
+    
+    /* Canvas wrapper */
+    .canvas-wrapper {
+        display: flex;
+        justify-content: center;
+        margin: 30px 0;
+        padding: 20px;
+        background: rgba(255,255,255,0.8);
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    /* Floating decorations */
     .floating-decoration {
         position: fixed;
         pointer-events: none;
         z-index: 1;
-        opacity: 0.6;
+        opacity: 0.7;
     }
     
-    .floating-decoration.dot-1 {
+    .floating-decoration.pattern-1 {
         top: 10%;
-        left: 5%;
-        animation: floatUpDown 6s ease-in-out infinite;
+        left: 3%;
+        animation: floatUpDown 8s ease-in-out infinite;
     }
     
-    .floating-decoration.dot-2 {
-        top: 20%;
-        right: 10%;
-        animation: floatUpDown 4s ease-in-out infinite reverse;
+    .floating-decoration.pattern-2 {
+        top: 25%;
+        right: 5%;
+        animation: floatUpDown 6s ease-in-out infinite reverse;
     }
     
-    .floating-decoration.dot-3 {
-        bottom: 30%;
+    .floating-decoration.pattern-3 {
+        bottom: 15%;
         left: 8%;
-        animation: floatUpDown 5s ease-in-out infinite;
+        animation: floatUpDown 7s ease-in-out infinite;
+    }
+    
+    .floating-decoration.pattern-4 {
+        top: 50%;
+        right: 2%;
+        animation: floatUpDown 5s ease-in-out infinite reverse;
+    }
+    
+    .floating-decoration.pattern-5 {
+        bottom: 30%;
+        right: 10%;
+        animation: floatUpDown 9s ease-in-out infinite;
     }
     
     @keyframes floatUpDown {
         0%, 100% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-20px) rotate(180deg); }
+        50% { transform: translateY(-25px) rotate(180deg); }
+    }
+    
+    /* Tips section special styling */
+    .tips-container {
+        background: linear-gradient(135deg, rgba(232,245,232,0.9), rgba(255,228,225,0.9));
+        padding: 25px;
+        border-radius: 20px;
+        margin: 20px 0;
+        border: 2px solid rgba(50,205,50,0.3);
+    }
+    
+    .tips-title {
+        font-family: 'Playfair Display', serif;
+        color: #2C3E50;
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 15px;
     }
     
     /* Responsive design */
     @media (max-width: 768px) {
-        .hero-title { font-size: 4.5rem; }
-        .hero-subtitle { font-size: 2rem; }
-        .section-title { font-size: 2.2rem; }
-        .section-container { padding: 25px; margin: 25px 0; }
-        .parallax-text { font-size: 2rem; }
+        .hero-title { font-size: 2.5rem; }
+        .hero-subtitle { font-size: 1.3rem; }
+        .drawing-container { padding: 25px; }
+        .settings-container { padding: 20px; }
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Add floating decorations
 st.markdown("""
-<div class="floating-decoration dot-1">
-    <div class="kolam-pattern-1"></div>
+<div class="floating-decoration pattern-1">
+    <div class="kolam-pattern-large"></div>
 </div>
-<div class="floating-decoration dot-2">
-    <div class="kolam-pattern-2"></div>
+<div class="floating-decoration pattern-2">
+    <div class="kolam-pattern-small"></div>
 </div>
-<div class="floating-decoration dot-3">
-    <div class="kolam-pattern-3"></div>
+<div class="floating-decoration pattern-3">
+    <div class="kolam-pattern-mini"></div>
+</div>
+<div class="floating-decoration pattern-4">
+    <div class="kolam-pattern-small"></div>
+</div>
+<div class="floating-decoration pattern-5">
+    <div class="kolam-pattern-mini"></div>
 </div>
 """, unsafe_allow_html=True)
 
-# Enhanced Hero Section
+# Hero Section
 st.markdown("""
 <div class="hero-section">
-    <div class="kolam-pattern-2"></div>
-    <div class="emoji-large">🌸</div>
-    <h1 class="hero-title">Kolam</h1>
-    <p class="hero-subtitle">The Ancient Art Where Dots, Lines, Faith, and Mathematics Meet</p>
-    <div class="kolam-pattern-1"></div>
+    <div class="kolam-pattern-large"></div>
+    <h1 class="hero-title">🎨 Kolam Drawing Canvas</h1>
+    <p class="hero-subtitle">Multi-Brush • Symmetry • Sacred Geometry</p>
+    <div class="kolam-pattern-small"></div>
 </div>
 """, unsafe_allow_html=True)
 
-# Enhanced Introduction Section
-st.markdown('<div class="section-container section-pink">', unsafe_allow_html=True)
-st.markdown('<div class="kolam-pattern-3"></div>', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">🌸 A Morning Ritual of Beauty</h2>', unsafe_allow_html=True)
-
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.write("""
-    Imagine this: it's early morning in a South Indian village. The sun is not yet up, the ground is cool and freshly washed with water, and you see women bending down in front of their homes with a small bowl of white powder in their hands. 
-    
-    Slowly, dot by dot, line by line, they create stunning patterns on the ground. By the time the street wakes up, the entire road looks decorated with lace-like white drawings.
-    """)
-
-with col2:
-    st.markdown('<div class="kolam-pattern-2"></div>', unsafe_allow_html=True)
-
-st.markdown('<div class="quote-highlight">This is called a <strong>Kolam</strong>.</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Enhanced What is Kolam Section
-st.markdown('<div class="section-container section-peach">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">🪔 What is Kolam?</h2>', unsafe_allow_html=True)
-
-col1, col2 = st.columns([1, 2])
-with col1:
-    st.markdown('<div class="kolam-pattern-1"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="kolam-pattern-3"></div>', unsafe_allow_html=True)
-
-with col2:
-    st.write("""
-    Kolam is a traditional floor art practiced in Tamil Nadu and across South India for thousands of years. It is made using rice flour, chalk powder, or sometimes colored powders.
-
-    The designs are usually based on a grid of dots, which are then connected with curves, loops, and lines to form symmetrical and geometric patterns.
-    """)
-
+# -----------------------------
+# Instructions / Tips
+# -----------------------------
 st.markdown("""
-<div class="highlight-box">
-<strong>You can think of Kolam as something between art, meditation, and mathematics.</strong>
-</div>
-""", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Enhanced Parallax Section
-st.markdown("""
-<div class="parallax-section">
-    <div class="kolam-pattern-2"></div>
-    <div class="parallax-text">✨ Over 5,000 Years of Continuous Tradition ✨</div>
-    <div class="kolam-pattern-1"></div>
+<div class="tips-container">
+    <div class="tips-title">✨ Tips for Drawing Beautiful Kolam</div>
+    <ul style="font-family: 'Lato', sans-serif; color: #2C3E50; line-height: 1.6;">
+        <li>🎨 Use light colors for intricate patterns</li>
+        <li>🖌️ Try different brush sizes and shapes</li>
+        <li>🔄 Enable mirror symmetry for authentic Kolam designs</li>
+        <li>💾 Download your final masterpiece when done</li>
+        <li>🌟 Start from the center and work outward</li>
+    </ul>
 </div>
 """, unsafe_allow_html=True)
 
-# Enhanced Ancient Origins Section
-st.markdown('<div class="section-container section-lavender">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">📅 Ancient Origins</h2>', unsafe_allow_html=True)
+# -----------------------------
+# Canvas & Brush Settings
+# -----------------------------
+st.markdown('<div class="settings-container">', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title">🎨 Canvas & Brush Settings</h2>', unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns([1, 2, 1])
-with col1:
-    st.markdown('<div class="kolam-pattern-3"></div>', unsafe_allow_html=True)
-    
-with col2:
-    st.write("Kolam is incredibly ancient:")
-    
-    st.markdown("""
-    <div class="interactive-card">
-    <strong>🏛️ Indus Valley Civilization</strong><br>
-    Archaeologists have found designs similar to Kolam from around 2500 BCE—that's more than 4,500 years ago.
-    </div>
-    
-    <div class="interactive-card">
-    <strong>📚 Tamil Sangam Literature</strong><br>
-    From 500 BCE–300 CE describes women drawing patterns outside their houses.
-    </div>
-    
-    <div class="interactive-card">
-    <strong>🏛️ Medieval Temples</strong><br>
-    Around the 10th century CE, temple carvings show Kolam-like patterns.
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown('<div class="kolam-pattern-2"></div>', unsafe_allow_html=True)
-
-st.markdown("""
-<div class="quote-highlight">
-Kolam is at least 2,000 years old by literature and possibly 5,000 years old by archaeology. It is one of the oldest continuous art traditions in the world.
-</div>
-""", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Enhanced Deep Meaning Section
-st.markdown('<div class="section-container section-mint">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">❓ The Deep Meaning Behind Kolam</h2>', unsafe_allow_html=True)
-st.markdown('<div class="kolam-pattern-1" style="margin-bottom: 30px;"></div>', unsafe_allow_html=True)
-
-st.write("Kolam may look like just decoration, but it has many layers of meaning:")
+canvas_size = 900  # Fixed canvas size
 
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown("""
-    <div class="interactive-card">
-    <strong>🙏 Spiritual Meaning</strong><br>
-    • Invites Goddess Lakshmi into the house<br>
-    • Form of daily prayer and devotion
-    </div>
+    # Background color
+    bg_color = st.color_picker("🎨 Background Color", "#071029")
     
-    <div class="interactive-card">
-    <strong>🛡️ Protective Purpose</strong><br>
-    • Symbolic barrier against evil spirits<br>
-    • Keeps away negative energies
-    </div>
-    """, unsafe_allow_html=True)
+    # Brush width
+    stroke_width = st.slider("🖌️ Stroke Width", 1, 20, 3)
 
 with col2:
-    st.markdown('<div class="kolam-pattern-2"></div>', unsafe_allow_html=True)
+    # Brush shape
+    drawing_mode = st.selectbox("✏️ Brush Shape", ["freedraw", "line", "circle", "rect"])
     
-with col3:
-    st.markdown("""
-    <div class="interactive-card">
-    <strong>🏠 Hospitality</strong><br>
-    • Shows the house is welcoming<br>
-    • Invitation for guests
-    </div>
-    
-    <div class="interactive-card">
-    <strong>🐜 Ecological Purpose</strong><br>
-    • Made with rice flour for insects and birds<br>
-    • Sharing food with nature
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("""
-<div class="interactive-card" style="margin-top: 20px;">
-<strong>🧘 Personal Discipline</strong><br>
-• Requires patience and steady hands • Daily practice of mindfulness • Training focus and creativity
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Enhanced Art of Creation Section
-st.markdown('<div class="section-container section-blue">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">📝 The Art of Creation</h2>', unsafe_allow_html=True)
-
-col1, col2 = st.columns([2, 1])
-with col1:
-    st.write("The process itself is very systematic:")
-
-    st.markdown("""
-    <div class="highlight-box">
-    <h3>The Four Steps:</h3>
-    <div class="interactive-card">
-    <strong>1. Cleaning the Ground:</strong> The entrance is swept and washed in the early morning. Sometimes cow dung mixed with water is spread to purify the space.
-    </div>
-
-    <div class="interactive-card">
-    <strong>2. Dot Grid:</strong> A series of dots are placed in a pattern (rows, triangles, or circles).
-    </div>
-
-    <div class="interactive-card">
-    <strong>3. Drawing Lines:</strong> The artist connects these dots with continuous loops, curves, and lines.
-    </div>
-
-    <div class="interactive-card">
-    <strong>4. Adding Details:</strong> Some designs are left plain; some are filled with color during festivals.
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown('<div class="kolam-pattern-3"></div>', unsafe_allow_html=True)
-    st.markdown('<div class="kolam-pattern-1"></div>', unsafe_allow_html=True)
-
-col1, col2 = st.columns(2)
-with col1:
-    st.markdown("""
-    <div class="interactive-card">
-    <strong>🔸 Pulli Kolam:</strong> Made using dot grids
-    </div>
-    <div class="interactive-card">
-    <strong>🔸 Sikku Kolam:</strong> Knot-like, with lines weaving around dots
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown("""
-    <div class="interactive-card">
-    <strong>🔸 Kavi Kolam:</strong> Red background with white powder, used in temples
-    </div>
-    <div class="interactive-card">
-    <strong>🔸 Freehand Kolam:</strong> Floral or symbolic designs drawn without dots
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Enhanced Sacred Moments Section
-st.markdown('<div class="section-container section-coral">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">🌸 Sacred Moments</h2>', unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1, 2, 1])
-
-with col1:
-    st.markdown('<div class="kolam-pattern-2"></div>', unsafe_allow_html=True)
-
-with col2:
-    st.markdown("""
-    <div class="interactive-card">
-    <strong>🌅 Daily Practice</strong><br>
-    Women wake up before sunrise to draw Kolam at the doorstep as part of starting the day.
-    </div>
-    
-    <div class="interactive-card">
-    <strong>🎉 Festivals</strong><br>
-    On Pongal (January harvest festival), large, colorful Kolams cover entire streets.
-    </div>
-    
-    <div class="interactive-card">
-    <strong>💒 Weddings</strong><br>
-    Special Kolams are drawn with symbols of fertility, prosperity, and good luck.
-    </div>
-    
-    <div class="interactive-card">
-    <strong>🏛️ Temples & Ceremonies</strong><br>
-    Kolams are drawn on temple floors during rituals and festivals.
-    </div>
-    """, unsafe_allow_html=True)
+    # Mirror count
+    mirror_count = st.selectbox("🔄 Number of Mirrors", [1, 2, 4, 6, 8], index=0)
 
 with col3:
-    st.markdown('<div class="kolam-pattern-3"></div>', unsafe_allow_html=True)
+    st.markdown('<div class="kolam-pattern-mini"></div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Enhanced Mathematics Section
-st.markdown('<div class="section-container section-lavender">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">🧮 Kolam Meets Modern Science</h2>', unsafe_allow_html=True)
+# -----------------------------
+# Color Selection
+# -----------------------------
+st.markdown('<div class="settings-container">', unsafe_allow_html=True)
+st.markdown('<h3 class="section-title">🌈 Choose Your Colors</h3>', unsafe_allow_html=True)
 
-col1, col2, col3 = st.columns([1, 2, 1])
+# Define colors with names
+color_options = {
+    "Lotus Pink": "#FFD6FF",
+    "Sacred Cyan": "#66FFF0", 
+    "Temple Orange": "#FF7B2F",
+    "Divine Mint": "#2AF598",
+    "Sky Blue": "#00C6FF",
+    "Golden Sun": "#FFFA66",
+    "Royal Magenta": "#FF66A3"
+}
 
-with col1:
-    st.markdown('<div class="kolam-pattern-1"></div>', unsafe_allow_html=True)
-
-with col2:
-    st.write("One of the most fascinating aspects of Kolam is that it is not only artistic but also mathematical:")
-
-    st.markdown("""
-    <div class="highlight-box">
-    <div class="interactive-card">
-    • The designs use <strong>symmetry, geometry, and repetition</strong>
-    </div>
-    <div class="interactive-card">
-    • The dots and lines can be explained with <strong>algorithms</strong>—step-by-step instructions, like computer code
-    </div>
-    <div class="interactive-card">
-    • Scientists today study Kolam using <strong>graph theory and fractals</strong>
-    </div>
-    <div class="interactive-card">
-    • Kolam is now being used in <strong>computer science, AI, and design automation</strong> as a way of understanding patterns
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown('<div class="kolam-pattern-2"></div>', unsafe_allow_html=True)
-
-st.markdown('<div class="quote-highlight">So Kolam connects ancient tradition with modern science.</div>', unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Enhanced Final Section
-st.markdown('<div class="section-container section-pink">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">✅ The Essence of Kolam</h2>', unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([1, 2, 1])
-
-with col1:
-    st.markdown('<div class="kolam-pattern-3"></div>', unsafe_allow_html=True)
-
-with col2:
-    st.write("""
-    Kolam is a beautiful, ancient, living art form from South India. It is drawn every day with rice flour in front of homes. It is thousands of years old, both a cultural tradition and a spiritual practice.
-    """)
-
-    st.markdown("""
-    <div class="highlight-box">
-    <p><strong>It is not just decoration—it is about:</strong></p>
-    <div class="interactive-card">🌟 Inviting good fortune</div>
-    <div class="interactive-card">🛡️ Protecting the home</div>
-    <div class="interactive-card">🌿 Respecting nature</div>
-    <div class="interactive-card">🧘 Practicing discipline</div>
-    <div class="interactive-card">🎨 Celebrating art and mathematics together</div>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown('<div class="kolam-pattern-1"></div>', unsafe_allow_html=True)
-
-st.markdown("""
-<div class="quote-highlight">
-<strong>👉 In one line: Kolam is the art where dots, lines, faith, and mathematics meet on the doorstep of every home.</strong>
-</div>
-""", unsafe_allow_html=True)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Interactive Kolam Gallery Section
-st.markdown('<div class="section-container section-peach">', unsafe_allow_html=True)
-st.markdown('<h2 class="section-title">🎨 Interactive Kolam Gallery</h2>', unsafe_allow_html=True)
-
-st.write("Experience the beauty of different Kolam patterns:")
-
-col1, col2, col3, col4 = st.columns(4)
-
-with col1:
-    st.markdown("""
-    <div class="interactive-card" style="text-align: center; padding: 30px;">
-        <div class="kolam-pattern-1"></div>
-        <strong>Dot Pattern Kolam</strong><br>
-        <small>Traditional grid-based design</small>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col2:
-    st.markdown("""
-    <div class="interactive-card" style="text-align: center; padding: 30px;">
-        <div class="kolam-pattern-2"></div>
-        <strong>Circular Kolam</strong><br>
-        <small>Ripple effect design</small>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown("""
-    <div class="interactive-card" style="text-align: center; padding: 30px;">
-        <div class="kolam-pattern-3"></div>
-        <strong>Star Kolam</strong><br>
-        <small>Twinkling star pattern</small>
-    </div>
-    """, unsafe_allow_html=True)
-
-with col4:
-    st.markdown("""
-    <div class="interactive-card" style="text-align: center; padding: 30px;">
-        <div class="kolam-pattern-1" style="animation-direction: reverse;"></div>
-        <strong>Festival Kolam</strong><br>
-        <small>Special occasion design</small>
-    </div>
-    """, unsafe_allow_html=True)
+# Responsive color buttons
+stroke_color = st.session_state.get("selected_color", "#FFD6FF")
+color_cols = st.columns(len(color_options))
+for i, (name, hex_color) in enumerate(color_options.items()):
+    with color_cols[i]:
+        if st.button(f"🎨 {name}", key=f"color_{name}_{i}", help=f"Click to select {name}"):
+            stroke_color = hex_color
+            st.session_state["selected_color"] = hex_color
+        # Show color preview
+        st.markdown(f'<div style="width: 100%; height: 20px; background: {hex_color}; border-radius: 10px; margin: 5px 0; box-shadow: 0 3px 8px rgba(0,0,0,0.2);"></div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Enhanced Footer with more animations
+# -----------------------------
+# Mirror Symmetry Function
+# -----------------------------
+def apply_mirror(strokes_img: Image.Image, mirrors: int, bg_rgb: tuple) -> Image.Image:
+    """Replicates strokes around center with N-way rotational symmetry."""
+    if mirrors == 1:
+        return strokes_img
+
+    cx, cy = strokes_img.size[0] // 2, strokes_img.size[1] // 2
+    base = strokes_img.convert("RGBA")
+
+    # Make strokes transparent except actual drawing
+    datas = base.getdata()
+    new_data = []
+    for item in datas:
+        if item[:3] == bg_rgb:  # background pixel
+            new_data.append((0, 0, 0, 0))  # transparent
+        else:
+            new_data.append(item)
+    base.putdata(new_data)
+
+    result = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    for i in range(mirrors):
+        rotated = base.rotate((360.0 / mirrors) * i, center=(cx, cy))
+        result = Image.alpha_composite(result, rotated)
+
+    return result
+
+# -----------------------------
+# Canvas
+# -----------------------------
+st.markdown('<div class="drawing-container">', unsafe_allow_html=True)
+st.markdown('<h2 class="section-title">🖼️ Your Sacred Canvas</h2>', unsafe_allow_html=True)
+
+st.markdown('<div class="canvas-wrapper">', unsafe_allow_html=True)
+canvas_result = st_canvas(
+    fill_color=None,
+    stroke_width=stroke_width,
+    stroke_color=stroke_color,
+    background_color=bg_color,
+    height=canvas_size,
+    width=canvas_size,
+    drawing_mode=drawing_mode,
+    key="kolam_canvas"
+)
+st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Convert background color hex → RGB for transparency check
+bg_rgb = tuple(int(bg_color.lstrip("#")[i:i+2], 16) for i in (0, 2, 4))
+
+# -----------------------------
+# Handle drawing
+# -----------------------------
+if canvas_result.image_data is not None:
+    img_current = Image.fromarray(canvas_result.image_data.astype("uint8"), "RGBA")
+
+    # Apply mirror symmetry
+    mirrored_strokes = apply_mirror(img_current, mirror_count, bg_rgb)
+
+    # Merge with solid background
+    bg_layer = Image.new("RGBA", (canvas_size, canvas_size), bg_rgb + (255,))
+    final_img = Image.alpha_composite(bg_layer, mirrored_strokes)
+
+    # Display the drawing
+    st.markdown('<div class="drawing-container">', unsafe_allow_html=True)
+    st.markdown('<h2 class="section-title">✨ Your Kolam Masterpiece</h2>', unsafe_allow_html=True)
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image(final_img, width=canvas_size)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # -----------------------------
+    # Download drawing
+    # -----------------------------
+    st.markdown('<div class="download-section">', unsafe_allow_html=True)
+    st.markdown('<div class="kolam-pattern-small"></div>', unsafe_allow_html=True)
+    
+    buf = io.BytesIO()
+    final_img.save(buf, format="PNG")
+    st.download_button(
+        "💾 Download Your Sacred Art",
+        data=buf,
+        file_name="kolam_masterpiece.png",
+        mime="image/png",
+        help="Save your beautiful Kolam creation!"
+    )
+    
+    st.markdown('<div class="kolam-pattern-mini"></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Footer
 st.markdown("""
 <div style="
     text-align: center; 
-    padding: 60px 40px; 
+    padding: 40px; 
     background: linear-gradient(135deg, #E8F5E8, #E6F3FF, #FFE4E1); 
     background-size: 300% 300%;
     animation: gradientShift 10s ease infinite;
     margin-top: 40px; 
-    border-radius: 30px;
+    border-radius: 25px;
     position: relative;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
 ">
-    <div class="kolam-pattern-2"></div>
-    <div style="font-size: 4rem; margin-bottom: 30px; animation: bounce 2s infinite; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2));">🌸✨🪔</div>
+    <div class="kolam-pattern-large"></div>
     <p style="
         font-family: 'Dancing Script', cursive; 
         color: #2C3E50; 
-        font-size: 2rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        margin-bottom: 20px;
-        animation: subtitleFloat 4s ease-in-out infinite;
+        margin-bottom: 15px;
     ">
-        Thank you for exploring the beautiful world of Kolam
+        Create • Inspire • Preserve Sacred Art
     </p>
-    <div class="kolam-pattern-1"></div>
+    <div class="kolam-pattern-small"></div>
     <p style="
         font-family: 'Lato', sans-serif; 
         color: #5D6D7E; 
-        font-size: 1.1rem;
         font-style: italic;
-        margin-top: 20px;
     ">
-        "Where ancient wisdom meets modern wonder"
+        "Every dot connects to create infinite beauty"
     </p>
-    <div class="kolam-pattern-3"></div>
 </div>
-""", unsafe_allow_html=True)
-
-# Add some interactive elements with JavaScript
-st.markdown("""
-<script>
-// Add some interactive hover effects
-document.addEventListener('DOMContentLoaded', function() {
-    // Add click effect to interactive cards
-    const cards = document.querySelectorAll('.interactive-card');
-    cards.forEach(card => {
-        card.addEventListener('click', function() {
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-                this.style.transform = 'translateY(-5px)';
-            }, 100);
-        });
-    });
-    
-    // Add parallax effect to hero section
-    window.addEventListener('scroll', function() {
-        const scrolled = window.pageYOffset;
-        const heroSection = document.querySelector('.hero-section');
-        if (heroSection) {
-            heroSection.style.transform = `translateY(${scrolled * 0.5}px)`;
-        }
-    });
-});
-</script>
 """, unsafe_allow_html=True)
